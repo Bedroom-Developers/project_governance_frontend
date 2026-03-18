@@ -54,26 +54,24 @@ function createColumns(directionId: string): ColumnDef<ProjectGroup>[] {
         const group = row.original as ProjectGroup;
 
         return (
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2 whitespace-normal">
             <Button
-              asChild
-              type="button"
               size="sm"
               variant="outline"
-              className="h-8 gap-1 rounded-lg border-neutral-200 text-xs text-[#566a7f]"
+              className="h-8 gap-1 rounded-lg border-neutral-200 px-2 text-xs text-[#566a7f]"
             >
               <Link
                 href={`/directions/${directionId}/groups/${group.id}/projects`}
+                className="inline-flex items-center gap-1 whitespace-nowrap"
               >
                 <FolderOpen className="size-3.5" />
                 Проекты
               </Link>
             </Button>
             <Button
-              type="button"
               size="sm"
               variant="outline"
-              className="h-8 gap-1 rounded-lg border-neutral-200 text-xs text-[#566a7f]"
+              className="h-8 gap-1 rounded-lg border-neutral-200 px-2 text-xs text-[#566a7f]"
             >
               <BarChart3 className="size-3.5" />
               Дэшборд

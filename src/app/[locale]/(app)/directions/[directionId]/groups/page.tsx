@@ -5,26 +5,12 @@ import type { ProjectGroup } from "@/modules/directions/schemas/project-group.sc
 import { ProjectGroupsTable } from "@/modules/directions/ui/widgets/project-groups-table/project-groups-table";
 
 const MOCK_GROUPS: Record<string, ProjectGroup[]> = {
-  healthcare: [
+  "1231": [
     {
-      id: 663,
-      name: "Цифровизация",
+      id: 664,
+      name: "Общая инфраструктура",
       ownerName: "Камария Кажгалиева",
-      projectsCount: 7,
-    },
-    {
-      id: 662,
-      name: "Повышение правопорядка",
-      ownerName: "Камария Кажгалиева",
-      projectsCount: 5,
-    },
-  ],
-  digitalization: [
-    {
-      id: 659,
-      name: "Повышение квалификации госаппарата",
-      ownerName: "Камария Кажгалиева",
-      projectsCount: 4,
+      projectsCount: 2,
     },
   ],
 };

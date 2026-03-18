@@ -13,46 +13,11 @@ export default async function DirectionsPage() {
 
   const directions: Direction[] = [
     {
-      id: "healthcare",
-      name: "БН5 Типовое базовое направление",
-      ownerName: "Ербол Садыр",
-      projectGroupsCount: 6,
-      projectsCount: 42,
-    },
-    {
-      id: "digitalization",
-      name: "БН4 Человеческий капитал",
-      ownerName: "Ербол Садыр",
-      projectGroupsCount: 5,
-      projectsCount: 31,
-    },
-    {
-      id: "education",
-      name: "БН3 АПК и Экология",
-      ownerName: "Ербол Садыр",
-      projectGroupsCount: 7,
-      projectsCount: 58,
-    },
-    {
-      id: "infrastructure",
+      id: "1231",
       name: "БН2 Развитие инфраструктуры",
       ownerName: "Ербол Садыр",
       projectGroupsCount: 4,
       projectsCount: 19,
-    },
-    {
-      id: "economy",
-      name: "БН1 Предпринимательство индустрия",
-      ownerName: "Ербол Садыр",
-      projectGroupsCount: 3,
-      projectsCount: 16,
-    },
-    {
-      id: "social",
-      name: "Социальная политика",
-      ownerName: "Серик Жуматаев",
-      projectGroupsCount: 4,
-      projectsCount: 27,
     },
   ];
 
