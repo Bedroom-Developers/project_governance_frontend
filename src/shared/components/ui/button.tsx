@@ -36,12 +36,25 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = ButtonPrimitive.Props &
+type ButtonProps = Omit<ButtonPrimitive.Props, "asChild"> &
   VariantProps<typeof buttonVariants> & {
+    /**
+     * В проекте не используется shadcn-подход с `asChild`,
+     * поэтому проп явно запрещаем и не прокидываем в DOM,
+     * чтобы избежать предупреждений React.
+     */
+    asChild?: never;
     ref?: React.RefObject<HTMLButtonElement | null>;
   };
 
-function Button({ className, variant, size, ...props }: ButtonProps) {
+function Button({
+  className,
+  variant,
+  size,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  asChild,
+  ...props
+}: ButtonProps) {
   return (
     <ButtonPrimitive
       data-slot="button"

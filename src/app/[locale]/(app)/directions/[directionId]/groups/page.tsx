@@ -50,7 +50,7 @@ export default async function ProjectGroupsPage({
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
         Группы проектов
       </h1>
-      <ProjectGroupsTable groups={groups} />
+      <ProjectGroupsTable groups={groups} directionId={directionId} />
     </div>
   );
 }
