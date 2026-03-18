@@ -1,0 +1,75 @@
+---
+alwaysApply: true
+---
+
+## URL state management with nuqs
+
+This project mandates that any user-controlled state that affects page content, navigation, or data fetching must be synchronized with the URL. Use the **nuqs** library for type-safe URL state management. This ensures shareable links, back/forward navigation, SSR compatibility, and consistent behavior across modules.
+
+### Must
+
+- Use `useQueryState` from `nuqs` for single query parameters (search, filters, toggles).
+- Use `useQueryStates` from `nuqs` for multiple related query parameters (filters, pagination, sorting).
+- Use appropriate parsers (`parseAsString`, `parseAsInteger`, `parseAsBoolean`, etc.) for type safety.
+- Reflect all such state in the URL query parameters; never keep a divergent internal copy.
+- Derive component state from the URL (source of truth), and update the URL on user actions.
+- Use `shallow` option when updating multiple parameters to avoid unnecessary re-renders.
+
+### Must not
+
+- Do not keep filter/search/sort/pagination state only in component or store state without syncing to URL.
+- Do not implement custom URL parsing/writing in modules; use nuqs hooks instead.
+- Do not debounce or throttle in ways that cause URL and UI to get out of sync.
+- Do not use `useState` for state that should be in the URL; use `useQueryState` instead.
+
+### Allowed exceptions
+
+- Purely ephemeral UI state that does not affect navigation or fetched data (e.g., input focus, open/close of local dropdowns, temporary form drafts before submit) may remain local.
+- Sensitive values that must never appear in the URL (e.g., passwords, tokens) must not be synced; design such flows accordingly.
+
+### Usage examples
+
+**Single query parameter:**
+
+```typescript
+import { useQueryState, parseAsString } from "nuqs";
+
+const [search, setSearch] = useQueryState(
+  "search",
+  parseAsString.withDefault("")
+);
+```
+
+**Multiple query parameters:**
+
+```typescript
+import { useQueryStates, parseAsInteger, parseAsString } from "nuqs";
+
+const [filters, setFilters] = useQueryStates({
+  page: parseAsInteger.withDefault(1),
+  limit: parseAsInteger.withDefault(10),
+  sort: parseAsString.withDefault("name"),
+  order: parseAsString.withDefault("asc"),
+});
+
+// Update multiple values at once
+setFilters({ page: 2, limit: 20 }, { shallow: true });
+```
+
+**Boolean toggle:**
+
+```typescript
+import { useQueryState, parseAsBoolean } from "nuqs";
+
+const [isActive, setIsActive] = useQueryState(
+  "active",
+  parseAsBoolean.withDefault(false)
+);
+```
+
+### Recommended resources
+
+- [nuqs documentation](https://nuqs.dev/)
+- `useQueryState` - for single query parameters
+- `useQueryStates` - for multiple related query parameters
+- Parsers: `parseAsString`, `parseAsInteger`, `parseAsBoolean`, `parseAsArrayOf`, etc.
