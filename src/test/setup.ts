@@ -42,6 +42,32 @@ vi.mock("next-intl", () => ({
     React.createElement(React.Fragment, null, children),
 }));
 
+// Mock next-intl/navigation (used by createNavigation)
+vi.mock("next-intl/navigation", () => ({
+  createNavigation: () => ({
+    Link: ({
+      href,
+      children,
+      ...props
+    }: {
+      href: string;
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => React.createElement("a", { href, ...props }, children),
+    redirect: vi.fn(),
+    usePathname: () => "/",
+    useRouter: () => ({
+      push: vi.fn(),
+      replace: vi.fn(),
+      prefetch: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+      refresh: vi.fn(),
+    }),
+    getPathname: () => "/",
+  }),
+}));
+
 // Mock sonner toast
 vi.mock("sonner", () => ({
   toast: {
