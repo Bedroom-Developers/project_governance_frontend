@@ -1,4 +1,69 @@
 {
   "welcome": "Добро пожаловать",
-  "goodbye": "До свидания"
+  "goodbye": "До свидания",
+  "directions": {
+    "title": "Направления",
+    "empty": "Список направлений проектов.",
+    "cards": {
+      "owner": "Ответственный",
+      "projectGroups": "Группы проектов",
+      "projects": "Проекты"
+    }
+  },
+  "app": {
+    "sidebar": {
+      "brand": "Платформа",
+      "directions": "Направления",
+      "home": "Главная",
+      "projects": "Проекты",
+      "tasks": "Задачи",
+      "team": "Команда",
+      "settings": "Настройки",
+      "help": "Помощь и информация",
+      "logout": "Выйти",
+      "upgrade": {
+        "title": "Перейти на Pro",
+        "text": "1 месяц бесплатно",
+        "button": "Обновить"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "pageTitle": "Вход — Платформа управления проектами области Абай",
+      "brand": "Платформа управления проектами области Абай",
+      "projectName": "Платформа управления проектами",
+      "headline": "С возвращением!",
+      "subhead": "Пожалуйста, введите ваши данные",
+      "emailLabel": "Email",
+      "emailPlaceholder": "anna@gmail.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "••••••••",
+      "showPassword": "Показать пароль",
+      "hidePassword": "Скрыть пароль",
+      "rememberMe": "Запомнить на 30 дней",
+      "forgotPassword": "Забыли пароль?",
+      "submit": "Войти",
+      "submitting": "Входим…",
+      "footer": {
+        "privacy": "Политика конфиденциальности",
+        "terms": "Условия использования",
+        "contact": "Контакты"
+      },
+      "demoHint": "Демо: форма без реальной авторизации.",
+      "validation": {
+        "emailRequired": "Укажите электронную почту",
+        "emailInvalid": "Введите корректный email",
+        "passwordRequired": "Введите пароль",
+        "passwordMin": "Пароль должен быть не короче 6 символов"
+      },
+      "toast": {
+        "successTitle": "Вход выполнен (демо)",
+        "successDescription": "Форма отправлена успешно. Подключим реальную авторизацию позже."
+      },
+      "side": {
+        "brandShort": "YourBrand"
+      }
+    }
+  }
 }

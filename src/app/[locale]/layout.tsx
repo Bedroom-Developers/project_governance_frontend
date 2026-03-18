@@ -21,9 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Create Next App with Crystal Architecture",
-  description:
-    "This is a starter template for Next.js with Crystal Architecture.",
+  title: "Платформа управления проектами области Абай",
+  description: "Платформа управления проектами, командой и задачами.",
 };
 
 export default async function LocaleLayout({

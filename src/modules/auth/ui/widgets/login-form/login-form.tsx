@@ -1,0 +1,176 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import {
+  createLoginSchema,
+  type LoginFormValues,
+} from "@/modules/auth/schemas/login.schema";
+import { Button, Checkbox, Input, Label } from "@/shared/components/ui";
+import { cn } from "@/shared/lib/utils";
+
+type LoginFormProps = {
+  className?: string;
+};
+
+export function LoginForm({ className }: LoginFormProps) {
+  const t = useTranslations("auth.login");
+  const locale = useLocale();
+  const router = useRouter();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const schema = useMemo(
+    () =>
+      createLoginSchema({
+        emailRequired: t("validation.emailRequired"),
+        emailInvalid: t("validation.emailInvalid"),
+        passwordRequired: t("validation.passwordRequired"),
+        passwordMin: t("validation.passwordMin"),
+      }),
+    [t],
+  );
+
+  const {
+    control,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    register,
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: true,
+    },
+    mode: "onSubmit",
+  });
+
+  const onSubmit = handleSubmit(async () => {
+    toast.success(t("toast.successTitle"), {
+      description: t("toast.successDescription"),
+    });
+    router.push(`/${locale}/directions`);
+  });
+
+  return (
+    <div className={cn("w-full", className)}>
+      <div className="mb-8 text-center">
+        <h1 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          {t("projectName")}
+        </h1>
+        <div className="mt-4 text-base font-semibold tracking-tight text-white/90">
+          {t("headline")}
+        </div>
+        <p className="mt-2 text-sm text-white/60">{t("subhead")}</p>
+      </div>
+
+      <form className="grid gap-5" onSubmit={onSubmit} noValidate>
+        <div className="grid gap-2">
+          <Label htmlFor="email" className="text-white/80">
+            {t("emailLabel")}
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder={t("emailPlaceholder")}
+            className={cn(
+              "h-11 rounded-md border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/10",
+              errors.email && "border-destructive",
+            )}
+            aria-invalid={Boolean(errors.email)}
+            {...register("email")}
+          />
+          {errors.email?.message ? (
+            <p className="text-destructive text-sm">{errors.email.message}</p>
+          ) : null}
+        </div>
+
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <Label htmlFor="password" className="text-white/80">
+              {t("passwordLabel")}
+            </Label>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="h-auto px-0 text-xs text-white/70 hover:text-white"
+              onClick={() => toast.info(t("demoHint"))}
+            >
+              {t("forgotPassword")}
+            </Button>
+          </div>
+          <div className="relative">
+            <Input
+              id="password"
+              type={isPasswordVisible ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder={t("passwordPlaceholder")}
+              className={cn(
+                "h-11 rounded-md border-white/10 bg-white/5 pr-11 text-white placeholder:text-white/35 focus-visible:ring-white/10",
+                errors.password && "border-destructive",
+              )}
+              aria-invalid={Boolean(errors.password)}
+              {...register("password")}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-white/55 hover:bg-white/5 hover:text-white"
+              aria-label={
+                isPasswordVisible ? t("hidePassword") : t("showPassword")
+              }
+              onClick={() => setIsPasswordVisible((v) => !v)}
+            >
+              {isPasswordVisible ? (
+                <EyeOffIcon className="size-4" />
+              ) : (
+                <EyeIcon className="size-4" />
+              )}
+            </Button>
+          </div>
+          {errors.password?.message ? (
+            <p className="text-destructive text-sm">
+              {errors.password.message}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <Controller
+            control={control}
+            name="remember"
+            render={({ field }) => (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(checked) =>
+                    field.onChange(Boolean(checked))
+                  }
+                  className="border-white/25 data-[checked]:border-white/40 data-[checked]:bg-white data-[checked]:text-black"
+                />
+                <span className="text-sm text-white/70">{t("rememberMe")}</span>
+              </div>
+            )}
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-11 w-full rounded-md bg-white text-black hover:bg-white/90"
+        >
+          {isSubmitting ? t("submitting") : t("submit")}
+        </Button>
+      </form>
+    </div>
+  );
+}

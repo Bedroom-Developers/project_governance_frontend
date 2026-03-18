@@ -1,4 +1,69 @@
 {
   "welcome": "Қош келдіңіз",
-  "goodbye": "Сау болыңыз"
+  "goodbye": "Сау болыңыз",
+  "directions": {
+    "title": "Бағыттар",
+    "empty": "Жоба бағыттарының тізімі.",
+    "cards": {
+      "owner": "Жауапты",
+      "projectGroups": "Жоба топтары",
+      "projects": "Жобалар"
+    }
+  },
+  "app": {
+    "sidebar": {
+      "brand": "Платформа",
+      "directions": "Бағыттар",
+      "home": "Басты бет",
+      "projects": "Жобалар",
+      "tasks": "Тапсырмалар",
+      "team": "Команда",
+      "settings": "Баптаулар",
+      "help": "Көмек және ақпарат",
+      "logout": "Шығу",
+      "upgrade": {
+        "title": "Pro-ға өту",
+        "text": "1 ай тегін",
+        "button": "Жаңарту"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "pageTitle": "Кіру — Абай облысының жобаларды басқару платформасы",
+      "brand": "Абай облысының жобаларды басқару платформасы",
+      "projectName": "Жобаларды басқару платформасы",
+      "headline": "Қайта қош келдіңіз!",
+      "subhead": "Мәліметтеріңізді енгізіңіз",
+      "emailLabel": "Email",
+      "emailPlaceholder": "anna@gmail.com",
+      "passwordLabel": "Құпиясөз",
+      "passwordPlaceholder": "••••••••",
+      "showPassword": "Құпиясөзді көрсету",
+      "hidePassword": "Құпиясөзді жасыру",
+      "rememberMe": "30 күнге есте сақтау",
+      "forgotPassword": "Құпиясөзді ұмыттыңыз ба?",
+      "submit": "Кіру",
+      "submitting": "Кіруде…",
+      "footer": {
+        "privacy": "Құпиялық саясаты",
+        "terms": "Қолдану шарттары",
+        "contact": "Байланыс"
+      },
+      "demoHint": "Демо: форма нақты авторизациясыз.",
+      "validation": {
+        "emailRequired": "Электрондық поштаны көрсетіңіз",
+        "emailInvalid": "Дұрыс email енгізіңіз",
+        "passwordRequired": "Құпиясөзді енгізіңіз",
+        "passwordMin": "Құпиясөз кемінде 6 таңба болуы керек"
+      },
+      "toast": {
+        "successTitle": "Кіру орындалды (демо)",
+        "successDescription": "Форма сәтті жіберілді. Нақты авторизацияны кейін қосамыз."
+      },
+      "side": {
+        "brandShort": "YourBrand"
+      }
+    }
+  }
 }
