@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 
 type MilestoneState = "completed" | "in-progress" | "started" | "not-started";
 
-type MilestoneStageLabel = "новая" | "исполняется" | "завершилось";
+type MilestoneStageLabel = "не начат" | "исполняется" | "завершилось";
 
 /** Краткие поля для карточки в списке (остальное — позже в модалке). */
 type MilestoneCardBrief = {
@@ -119,7 +119,7 @@ function getMilestoneCardBrief(
   const lateDaysByMilestone = [2, 0, 95, 14, 0, 400, 62, 0];
   const lateDays = lateDaysByMilestone[index] ?? 0;
   const planDelayLabel =
-    lateDays > 0 ? `+${formatDelayDuration(lateDays)}` : null;
+    lateDays > 0 ? `-${formatDelayDuration(lateDays)}` : null;
 
   return {
     lastActivity: `25.${m}.${base}, 12:00`,
@@ -133,15 +133,17 @@ function getMilestoneCardBrief(
 
 function stateToStageLabel(state: MilestoneState): MilestoneStageLabel {
   if (state === "completed") return "завершилось";
-  if (state === "not-started") return "новая";
+  if (state === "not-started") return "не начат";
   return "исполняется";
 }
 
 function stageBadgeClass(label: MilestoneStageLabel) {
   if (label === "завершилось")
     return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  if (label === "новая")
+  if (label === "не начат")
     return "border-neutral-200 bg-neutral-50 text-neutral-600";
+  if (label === "исполняется")
+    return "border-[#696cff] bg-[#eef1ff] text-[#696cff]";
   return "border-[#696cff] bg-[#eef1ff] text-[#696cff]";
 }
 
@@ -152,8 +154,8 @@ const MOCK_PROJECTS: Record<string, Project[]> = {
       name: "Модернизация транспортных узлов области",
       lastUpdated: "2026-02-14T10:00:00Z",
       ownerName: "Камария Кажгалиева",
-      stage: "execution",
-      stagePercent: 55,
+      stage: "done",
+      stagePercent: 100,
       region: "г. Семей",
       tasksTotal: 24,
       tasksDone: 13,
@@ -178,8 +180,8 @@ const MOCK_PROJECTS: Record<string, Project[]> = {
       name: "Модернизация водоснабжения и очистных сооружений",
       lastUpdated: "2026-02-14T10:00:00Z",
       ownerName: "Камария Кажгалиева",
-      stage: "execution",
-      stagePercent: 55,
+      stage: "done",
+      stagePercent: 100,
       region: "г. Семей",
       tasksTotal: 24,
       tasksDone: 13,
@@ -204,8 +206,8 @@ const MOCK_PROJECTS: Record<string, Project[]> = {
       name: "Строительство спортивного комплекса г. Аягоз (ул. Шакенова)",
       lastUpdated: "2026-02-20T09:15:00Z",
       ownerName: "Камария Кажгалиева",
-      stage: "planning",
-      stagePercent: 30,
+      stage: "execution",
+      stagePercent: 80,
       region: "г. Аягоз",
       tasksTotal: 10,
       tasksDone: 3,

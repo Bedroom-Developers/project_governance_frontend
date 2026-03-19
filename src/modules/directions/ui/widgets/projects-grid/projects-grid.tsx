@@ -8,6 +8,7 @@ import {
   Flag,
   FolderTree,
   ListChecks,
+  Loader2,
   Mail,
   MessageSquareText,
   Pin,
@@ -74,6 +75,52 @@ export function ProjectsGrid({
     "БН5 Типовое базовое направление",
     "Повышение правопорядка",
   ];
+
+  function CamerasPreviewCard() {
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    React.useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        setIsLoading(false);
+      }, 2500);
+
+      return () => clearTimeout(timeoutId);
+    }, []);
+
+    return (
+      <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-[#111827]">
+            Просмотр видеопотока
+          </p>
+          <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
+            {isLoading ? "Загрузка…" : "Камера не подключена"}
+          </span>
+        </div>
+
+        <div className="mt-4 aspect-video rounded-lg bg-neutral-50 flex items-center justify-center p-4 text-center">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-2">
+              <Loader2 className="size-5 animate-spin text-[#9ca3af]" />
+              <p className="text-sm font-semibold text-[#9ca3af]">
+                Загрузка видеопотока…
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm font-semibold text-[#9ca3af]">
+              Камера не подключена
+            </p>
+          )}
+        </div>
+
+        <p className="mt-3 text-xs text-[#9ca3af]">
+          {isLoading
+            ? "Подключаем видеопоток. Это займет несколько секунд."
+            : "Видеопоток пока недоступен."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("grid gap-5 sm:grid-cols-2 xl:grid-cols-3", className)}>
@@ -186,56 +233,38 @@ export function ProjectsGrid({
                             Камеры проекта
                           </DialogTitle>
                           <p className="text-sm text-[#6b7280]">
-                            Мониторинг хода стройки в реальном времени (пока
-                            мок)
+                            Мониторинг хода стройки в реальном времени
                           </p>
                         </DialogHeader>
 
                         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
                           <div className="space-y-3">
-                            {["Камера 1", "Камера 2", "Камера 3"].map(
-                              (camera) => (
-                                <div
-                                  key={camera}
-                                  className="rounded-xl border border-neutral-200/70 bg-white px-4 py-3"
-                                >
-                                  <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-semibold text-[#111827]">
-                                      {camera}
-                                    </p>
-                                    <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
-                                      Камера не подключена
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-xs text-[#9ca3af]">
-                                    Как только появится доступ к потоку, здесь
-                                    начнётся realtime-мониторинг.
+                            {[
+                              "Въездные ворота",
+                              "Строительная площадка",
+                              "Фасад комплекса",
+                            ].map((camera) => (
+                              <div
+                                key={camera}
+                                className="rounded-xl border border-neutral-200/70 bg-white px-4 py-3"
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="text-sm font-semibold text-[#111827]">
+                                    {camera}
                                   </p>
+                                  <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
+                                    Камера не подключена
+                                  </span>
                                 </div>
-                              ),
-                            )}
+                                <p className="mt-1 text-xs text-[#9ca3af]">
+                                  Как только появится доступ к потоку, здесь
+                                  начнётся realtime-мониторинг.
+                                </p>
+                              </div>
+                            ))}
                           </div>
 
-                          <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
-                            <div className="flex items-center justify-between gap-3">
-                              <p className="text-sm font-semibold text-[#111827]">
-                                Моковый просмотр
-                              </p>
-                              <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
-                                В ожидании подключения
-                              </span>
-                            </div>
-
-                            <div className="mt-4 aspect-video rounded-lg bg-neutral-50 flex items-center justify-center p-4 text-center text-sm font-semibold text-[#9ca3af]">
-                              Камера не подключена
-                            </div>
-
-                            <p className="mt-3 text-xs text-[#9ca3af]">
-                              После подключения вместо этого блока будет
-                              отображаться видео и обновления по ходу стройки в
-                              реальном времени.
-                            </p>
-                          </div>
+                          <CamerasPreviewCard />
                         </div>
                       </DialogContent>
                     </Dialog>
@@ -690,7 +719,6 @@ export function ProjectsGrid({
                   <div className="px-4 pt-2">
                     <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-neutral-200/70 bg-white px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <Video className="size-4 text-[#696cff]" />
                         <p className="text-sm font-semibold text-[#111827]">
                           Действия
                         </p>

@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ChevronRightIcon,
-  ContactRoundIcon,
-  FolderIcon,
-  HomeIcon,
-  SettingsIcon,
-  UsersIcon,
-  CheckSquareIcon,
-  CompassIcon,
-  LogOutIcon,
-} from "lucide-react";
+import { ContactRoundIcon, CompassIcon, LogOutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/shared/configs/i18/navigation";
@@ -19,27 +9,11 @@ type NavItem = {
   href: string;
   labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
-  hasChevron?: boolean;
 };
 
 const primaryItems: NavItem[] = [
   { href: "/directions", labelKey: "directions", icon: CompassIcon },
-  { href: "/", labelKey: "home", icon: HomeIcon },
-  {
-    href: "/projects",
-    labelKey: "projects",
-    icon: FolderIcon,
-    hasChevron: true,
-  },
-  {
-    href: "/tasks",
-    labelKey: "tasks",
-    icon: CheckSquareIcon,
-    hasChevron: true,
-  },
-  { href: "/team", labelKey: "team", icon: UsersIcon },
   { href: "/users", labelKey: "users", icon: ContactRoundIcon },
-  { href: "/settings", labelKey: "settings", icon: SettingsIcon },
 ];
 
 export function AppSidebar() {
@@ -71,9 +45,6 @@ export function AppSidebar() {
               <item.icon className="size-4 text-[#a1acb8] group-hover:text-[#566a7f]" />
               {t(item.labelKey)}
             </span>
-            {item.hasChevron ? (
-              <ChevronRightIcon className="size-4 text-[#a1acb8] group-hover:text-[#566a7f]" />
-            ) : null}
           </Link>
         ))}
       </nav>
