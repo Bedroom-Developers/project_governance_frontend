@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  ArrowRight,
   CalendarDays,
   ChevronRight,
   Clock,
+  Flag,
   FolderTree,
   ListChecks,
   Mail,
@@ -11,6 +13,7 @@ import {
   Pin,
   Send,
   Sparkles,
+  Video,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import * as React from "react";
@@ -34,14 +37,22 @@ import {
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import { SegmentProgress } from "@/shared/components/ui/segment-progress";
+import { Link } from "@/shared/configs/i18/navigation";
 import { cn } from "@/shared/lib/utils";
 
 type ProjectsGridProps = {
   projects: Project[];
+  directionId: string;
+  groupId: string;
   className?: string;
 };
 
-export function ProjectsGrid({ projects, className }: ProjectsGridProps) {
+export function ProjectsGrid({
+  projects,
+  directionId,
+  groupId,
+  className,
+}: ProjectsGridProps) {
   const locale = useLocale();
   const formatNumber = (value: number) =>
     new Intl.NumberFormat(locale).format(value);
@@ -153,9 +164,85 @@ export function ProjectsGrid({ projects, className }: ProjectsGridProps) {
                       {project.region}
                     </span>
                   </p>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/directions/${directionId}/groups/${groupId}/projects/${project.id}/milestones`}
+                      className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors"
+                    >
+                      <Flag className="size-4 text-[#696cff]" />
+                      Вехи проекта
+                      <ArrowRight className="size-4 text-[#9ca3af]" />
+                    </Link>
+
+                    <Dialog>
+                      <DialogTrigger className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors">
+                        <Video className="size-4 text-[#696cff]" />
+                        Камеры
+                      </DialogTrigger>
+                      <DialogContent className="max-w-5xl">
+                        <DialogHeader className="space-y-2">
+                          <DialogTitle className="text-xl font-semibold">
+                            Камеры проекта
+                          </DialogTitle>
+                          <p className="text-sm text-[#6b7280]">
+                            Мониторинг хода стройки в реальном времени (пока
+                            мок)
+                          </p>
+                        </DialogHeader>
+
+                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+                          <div className="space-y-3">
+                            {["Камера 1", "Камера 2", "Камера 3"].map(
+                              (camera) => (
+                                <div
+                                  key={camera}
+                                  className="rounded-xl border border-neutral-200/70 bg-white px-4 py-3"
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <p className="text-sm font-semibold text-[#111827]">
+                                      {camera}
+                                    </p>
+                                    <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
+                                      Камера не подключена
+                                    </span>
+                                  </div>
+                                  <p className="mt-1 text-xs text-[#9ca3af]">
+                                    Как только появится доступ к потоку, здесь
+                                    начнётся realtime-мониторинг.
+                                  </p>
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-sm font-semibold text-[#111827]">
+                                Моковый просмотр
+                              </p>
+                              <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
+                                В ожидании подключения
+                              </span>
+                            </div>
+
+                            <div className="mt-4 aspect-video rounded-lg bg-neutral-50 flex items-center justify-center p-4 text-center text-sm font-semibold text-[#9ca3af]">
+                              Камера не подключена
+                            </div>
+
+                            <p className="mt-3 text-xs text-[#9ca3af]">
+                              После подключения вместо этого блока будет
+                              отображаться видео и обновления по ходу стройки в
+                              реальном времени.
+                            </p>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-2 text-right">
+                <div className="flex flex-col items-start gap-2">
                   <span className="rounded-full bg-[#eef1ff] px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#696cff]">
                     <span className="inline-flex items-center gap-2">
                       <Sparkles className="size-3" />
@@ -541,20 +628,10 @@ export function ProjectsGrid({ projects, className }: ProjectsGridProps) {
                           placeholder="Напишите комментарий или описание действия…"
                           className="min-h-24 resize-none border-0 text-sm focus-visible:ring-0"
                         />
-                        <div className="mt-4 flex items-center justify-between gap-2 border-t border-neutral-100 pt-3">
+                        <div className="mt-4 border-t border-neutral-100 pt-3">
                           <p className="text-xs text-[#9ca3af]">
                             Подсказка: укажите, что сделано и кем
                           </p>
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                              <Pin className="size-4" />
-                              Закрепить событие
-                            </Button>
-                            <Button size="sm">
-                              <Send className="size-4" />
-                              Отправить в историю
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     </TabsContent>
@@ -576,20 +653,10 @@ export function ProjectsGrid({ projects, className }: ProjectsGridProps) {
                           placeholder="Опишите изменения по делу проекта…"
                           className="min-h-24 resize-none border-0 text-sm focus-visible:ring-0"
                         />
-                        <div className="mt-4 flex items-center justify-between gap-2 border-t border-neutral-100 pt-3">
+                        <div className="mt-4 border-t border-neutral-100 pt-3">
                           <p className="text-xs text-[#9ca3af]">
                             Подсказка: укажите этап/статус и кем
                           </p>
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                              <Pin className="size-4" />
-                              Закрепить событие
-                            </Button>
-                            <Button size="sm">
-                              <Send className="size-4" />
-                              Отправить в историю
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     </TabsContent>
@@ -611,23 +678,34 @@ export function ProjectsGrid({ projects, className }: ProjectsGridProps) {
                           placeholder="Опишите результат или текущий статус задачи…"
                           className="min-h-24 resize-none border-0 text-sm focus-visible:ring-0"
                         />
-                        <div className="mt-4 flex items-center justify-between gap-2 border-t border-neutral-100 pt-3">
+                        <div className="mt-4 border-t border-neutral-100 pt-3">
                           <p className="text-xs text-[#9ca3af]">
                             Подсказка: укажите результат и исполнителя
                           </p>
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                              <Pin className="size-4" />
-                              Закрепить событие
-                            </Button>
-                            <Button size="sm">
-                              <Send className="size-4" />
-                              Отправить в историю
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     </TabsContent>
+                  </div>
+
+                  <div className="px-4 pt-2">
+                    <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-neutral-200/70 bg-white px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Video className="size-4 text-[#696cff]" />
+                        <p className="text-sm font-semibold text-[#111827]">
+                          Действия
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm">
+                          <Pin className="size-4" />
+                          Закрепить событие
+                        </Button>
+                        <Button size="sm">
+                          <Send className="size-4" />
+                          Отправить в историю
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="px-4 pb-4">

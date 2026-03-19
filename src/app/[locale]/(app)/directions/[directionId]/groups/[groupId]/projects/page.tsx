@@ -90,7 +90,11 @@ export default async function ProjectsPage({
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
         Проекты группы
       </h1>
-      <ProjectsGrid projects={projects} />
+      <ProjectsGrid
+        projects={projects}
+        directionId={directionId}
+        groupId={groupId}
+      />
     </div>
   );
 }
