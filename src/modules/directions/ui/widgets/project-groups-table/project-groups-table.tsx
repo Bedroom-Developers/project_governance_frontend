@@ -68,15 +68,6 @@ function createColumns(directionId: string): ColumnDef<ProjectGroup>[] {
                 Проекты
               </Link>
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 gap-1 rounded-lg border-neutral-200 px-2 text-xs text-[#566a7f]"
-            >
-              <BarChart3 className="size-3.5" />
-              Дэшборд
-              <ArrowUpRight className="size-3.5" />
-            </Button>
           </div>
         );
       },
