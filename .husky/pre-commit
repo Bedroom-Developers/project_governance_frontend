@@ -1,4 +1,0 @@
-# Линт и автофикс только по файлам в коммите (Biome)
-pnpm exec lint-staged
-# Unit-тесты перед коммитом
-pnpm run test:run

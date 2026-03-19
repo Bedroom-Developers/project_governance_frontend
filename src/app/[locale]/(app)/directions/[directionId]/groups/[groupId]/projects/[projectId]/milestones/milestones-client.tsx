@@ -172,14 +172,68 @@ function computeDelayBadgeForOverdueTask(task: TaskNode, nowIso: string) {
 }
 
 const MILESTONES_TITLES = [
-  "Подготовительный этап",
-  "Возведение каркаса здания",
-  "Ограждающие конструкции",
-  "Внутренние строительные работы",
-  "Инженерные системы",
-  "Наружные сети",
-  "Благоустройство территории",
-  "Ввод объекта в эксплуатацию",
+  "Организационная подготовка и согласования",
+  "Геодезия, земляные работы и подготовка основания",
+  "Устройство фундамента и подземной части",
+  "Возведение каркаса и монтаж перекрытий",
+  "Ограждающие конструкции и кровля",
+  "Внутренние работы и отделка помещений",
+  "Инженерные системы и электромонтаж",
+  "Наружные сети, благоустройство и ввод объекта",
+];
+
+const STAGE_TASK_TITLES: Array<readonly [string, string, string]> = [
+  [
+    "Подготовка площадки и старт работ",
+    "Документация ПОС/ППР и закупочный план",
+    "Согласование графика с подрядчиками",
+  ],
+  [
+    "Геодезическая разбивка и контроль отметок",
+    "Котлован, траншеи и вывоз грунта",
+    "Отсыпка, обратная засыпка и уплотнение",
+  ],
+  [
+    "Основание и армирование фундаментных конструкций",
+    "Бетонирование плит и ростверков",
+    "Гидроизоляция и антикоррозионная защита",
+  ],
+  [
+    "Монтаж несущего каркаса",
+    "Устройство перекрытий и узлов примыкания",
+    "Геометрический контроль и приемка каркаса",
+  ],
+  [
+    "Монтаж ограждающих конструкций",
+    "Устройство кровли и водосточных систем",
+    "Оконные блоки и герметизация узлов",
+  ],
+  [
+    "СМР в спортивном зале и раздевалках",
+    "Отделка помещений: штукатурка и покраска",
+    "Полы, подвесные потолки и внутренние перегородки",
+  ],
+  [
+    "Электроснабжение и силовые сети",
+    "ОВ/ВК: отопление, вентиляция и водоснабжение",
+    "Слаботочные системы: связь, СКУД и видеонаблюдение",
+  ],
+  [
+    "Наружные сети: водопровод, канализация, ливневка",
+    "Благоустройство территории и спортивные площадки",
+    "Пусконаладка, комплексные испытания и ввод в эксплуатацию",
+  ],
+];
+
+const STAGE_SUBTASK_TITLES: Array<string | null> = [
+  "Разбивка работ по фазам: въезд техники, ограждение и временные сети",
+  null,
+  "Монтаж закладных деталей для крепления каркаса",
+  null,
+  "Утепление и пароизоляция кровельного пирога",
+  null,
+  "Прокладка кабельных линий, маркировка и измерения",
+  null,
 ];
 
 function buildTasksTree(
@@ -193,15 +247,16 @@ function buildTasksTree(
 
   const nowIso = new Date().toISOString();
 
-  // Моковая генерация: по 3 задачи на этап, у части есть подзадачи.
+  // Демо-генерация: по 3 задачи на этап, у части есть подзадачи.
   return MILESTONES_TITLES.map((milestoneTitle, mIdx) => {
     const milestoneState = milestoneStateList[mIdx] ?? "not-started";
     const milestoneId = `milestone-${mIdx + 1}`;
+    const stageSubtaskTitle = STAGE_SUBTASK_TITLES[mIdx];
     const stageTasks: TaskNode[] = [
       {
         kind: "task",
         id: `task-${milestoneId}-1`,
-        title: `Задача ${String(mIdx + 1).padStart(2, "0")}.01 — ${milestoneTitle}`,
+        title: STAGE_TASK_TITLES[mIdx]?.[0] ?? milestoneTitle,
         status:
           milestoneState === "completed"
             ? "completed"
@@ -250,55 +305,52 @@ function buildTasksTree(
                   text: "Работы выполняются по графику.",
                 },
               ],
-        children:
-          mIdx % 2 === 0
-            ? [
-                {
-                  kind: "task",
-                  id: `task-${milestoneId}-1-1`,
-                  title: `Подзадача ${String(mIdx + 1).padStart(2, "0")}.01.01 — подготовка`,
-                  status:
-                    milestoneState === "completed"
-                      ? "completed"
-                      : "in-progress",
-                  lastActivity: nowIso,
-                  factStart:
-                    milestoneState === "completed"
-                      ? makeIsoDate(mIdx * 7 + 2)
-                      : null,
-                  factEnd:
-                    milestoneState === "completed"
-                      ? makeIsoDate(mIdx * 7 + 5 + 10)
-                      : null,
-                  planStart: makeIsoDate(mIdx * 7 + 1),
-                  planEnd:
-                    milestoneState === "in-progress"
-                      ? makeIsoDate(mIdx * 7 + 2)
-                      : makeIsoDate(mIdx * 7 + 4),
-                  assigner,
-                  executor: executorB,
-                  history:
-                    milestoneState === "completed"
-                      ? [
-                          {
-                            date: makeIsoDate(mIdx * 7 + 8),
-                            author: executorB,
-                            field: "Прогресс",
-                            oldValue: "45%",
-                            newValue: "100%",
-                          },
-                        ]
-                      : [],
-                  comments: [],
-                  children: [],
-                },
-              ]
-            : [],
+        children: stageSubtaskTitle
+          ? [
+              {
+                kind: "task",
+                id: `task-${milestoneId}-1-1`,
+                title: stageSubtaskTitle,
+                status:
+                  milestoneState === "completed" ? "completed" : "in-progress",
+                lastActivity: nowIso,
+                factStart:
+                  milestoneState === "completed"
+                    ? makeIsoDate(mIdx * 7 + 2)
+                    : null,
+                factEnd:
+                  milestoneState === "completed"
+                    ? makeIsoDate(mIdx * 7 + 5 + 10)
+                    : null,
+                planStart: makeIsoDate(mIdx * 7 + 1),
+                planEnd:
+                  milestoneState === "in-progress"
+                    ? makeIsoDate(mIdx * 7 + 2)
+                    : makeIsoDate(mIdx * 7 + 4),
+                assigner,
+                executor: executorB,
+                history:
+                  milestoneState === "completed"
+                    ? [
+                        {
+                          date: makeIsoDate(mIdx * 7 + 8),
+                          author: executorB,
+                          field: "Прогресс",
+                          oldValue: "45%",
+                          newValue: "100%",
+                        },
+                      ]
+                    : [],
+                comments: [],
+                children: [],
+              },
+            ]
+          : [],
       },
       {
         kind: "task",
         id: `task-${milestoneId}-2`,
-        title: `Задача ${String(mIdx + 1).padStart(2, "0")}.02 — ${milestoneTitle}`,
+        title: STAGE_TASK_TITLES[mIdx]?.[1] ?? milestoneTitle,
         status:
           milestoneState === "completed"
             ? "completed"
@@ -347,7 +399,7 @@ function buildTasksTree(
       {
         kind: "task",
         id: `task-${milestoneId}-3`,
-        title: `Задача ${String(mIdx + 1).padStart(2, "0")}.03 — ${milestoneTitle}`,
+        title: STAGE_TASK_TITLES[mIdx]?.[2] ?? milestoneTitle,
         status:
           milestoneState === "completed"
             ? "completed"

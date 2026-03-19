@@ -41,6 +41,7 @@ import { SegmentProgress } from "@/shared/components/ui/segment-progress";
 import { Link } from "@/shared/configs/i18/navigation";
 import { cn } from "@/shared/lib/utils";
 import { ObjectPassportDialog } from "./object-passport-dialog";
+import { ProjectDashboardDialog } from "./project-dashboard-dialog";
 
 type ProjectsGridProps = {
   projects: Project[];
@@ -223,6 +224,8 @@ export function ProjectsGrid({
                       Вехи проекта
                       <ArrowRight className="size-4 text-[#9ca3af]" />
                     </Link>
+
+                    <ProjectDashboardDialog project={project} />
 
                     <Dialog>
                       <DialogTrigger className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors">

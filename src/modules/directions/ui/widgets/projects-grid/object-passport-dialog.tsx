@@ -377,13 +377,13 @@ const PASSPORT_STEPS: PassportStep[] = [
 
 function PeopleList({ people }: { people: PassportPerson[] }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {people.map((person) => (
         <div
           key={person.fio}
-          className="flex items-start gap-3 rounded-lg border border-neutral-200/70 bg-white p-2 transition-colors hover:bg-neutral-50"
+          className="flex items-start gap-2 rounded-lg border border-neutral-200/70 bg-white p-2 transition-colors hover:bg-neutral-50"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-50 text-sm font-semibold text-[#4b5563]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-50 text-sm font-semibold text-[#4b5563]">
             {getInitials(person.fio)}
           </div>
 
@@ -413,7 +413,7 @@ function FilesList({ files }: { files: PassportFile[] }) {
   if (!files.length) return null;
 
   return (
-    <div className="mt-3">
+    <div className="mt-2">
       <div className="flex items-center gap-2">
         <FileText className="size-4 text-[#696cff]" />
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#9ca3af]">
@@ -421,17 +421,17 @@ function FilesList({ files }: { files: PassportFile[] }) {
         </p>
       </div>
 
-      <div className="mt-2 space-y-2">
+      <div className="mt-1 space-y-1.5">
         {files.map((file) => {
           const meta = getFileMeta(file.extension);
 
           return (
             <div
               key={`${file.name}-${file.extension}`}
-              className="flex items-center gap-3 rounded-lg border border-neutral-200/70 bg-white px-2.5 py-2 transition-colors hover:bg-neutral-50"
+              className="flex items-center gap-2 rounded-lg border border-neutral-200/70 bg-white px-2 py-1.5 transition-colors hover:bg-neutral-50"
             >
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-md ${meta.rowClassName}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${meta.rowClassName}`}
               >
                 <span className={meta.iconClassName}>{meta.icon}</span>
               </div>
@@ -451,18 +451,18 @@ function FilesList({ files }: { files: PassportFile[] }) {
 
 function SubstepsList({ substeps }: { substeps: PassportSubstep[] }) {
   return (
-    <div className="mt-3 rounded-xl border border-neutral-200/70 bg-white p-3">
+    <div className="mt-2 rounded-xl border border-neutral-200/70 bg-white p-3">
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9ca3af]">
           Состав подэтапов
         </span>
       </div>
 
-      <div className="mt-3 space-y-2 border-l-2 border-dashed border-neutral-200 pl-4">
+      <div className="mt-2 space-y-1.5 border-l-2 border-dashed border-neutral-200 pl-3">
         {substeps.map((substep) => (
           <div
             key={substep.title}
-            className="rounded-xl border border-neutral-200/70 bg-white p-3"
+            className="rounded-xl border border-neutral-200/70 bg-white p-2"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -484,7 +484,7 @@ function SubstepsList({ substeps }: { substeps: PassportSubstep[] }) {
 
 function ObjectPassportStepper() {
   return (
-    <ol className="space-y-4">
+    <ol className="space-y-3">
       {PASSPORT_STEPS.map((step) => {
         const meta = getStepStatusMeta(step.status);
 
@@ -492,14 +492,14 @@ function ObjectPassportStepper() {
           <li key={step.title}>
             <div
               className={[
-                "mx-auto max-w-5xl rounded-xl border border-neutral-200/70 p-4 shadow-[0_4px_18px_rgba(34,48,62,0.06)]",
+                "mx-auto max-w-5xl rounded-xl border border-neutral-200/70 p-3 shadow-[0_4px_18px_rgba(34,48,62,0.06)]",
                 "border-l-4 relative overflow-hidden",
                 meta.borderLClassName,
               ].join(" ")}
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h2 className="text-base font-semibold text-[#1f2933]">
+                  <h2 className="text-sm font-semibold text-[#1f2933]">
                     {step.title}
                   </h2>
                   <div className="mt-0.5 text-sm text-[#9ca3af]">
@@ -521,7 +521,7 @@ function ObjectPassportStepper() {
                 </span>
               </div>
 
-              <div className="mt-3">
+              <div className="mt-2">
                 <div className="flex items-center gap-2">
                   <Users className="size-4 text-[#696cff]" />
                   <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#9ca3af]">
@@ -529,7 +529,7 @@ function ObjectPassportStepper() {
                   </p>
                 </div>
 
-                <div className="mt-3">
+                <div className="mt-2">
                   <PeopleList people={step.people} />
                 </div>
               </div>
