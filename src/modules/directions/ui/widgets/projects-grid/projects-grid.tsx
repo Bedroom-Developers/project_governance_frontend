@@ -40,6 +40,7 @@ import {
 import { SegmentProgress } from "@/shared/components/ui/segment-progress";
 import { Link } from "@/shared/configs/i18/navigation";
 import { cn } from "@/shared/lib/utils";
+import { ObjectPassportDialog } from "./object-passport-dialog";
 
 type ProjectsGridProps = {
   projects: Project[];
@@ -213,6 +214,7 @@ export function ProjectsGrid({
                   </p>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <ObjectPassportDialog projectName={project.name} />
                     <Link
                       href={`/directions/${directionId}/groups/${groupId}/projects/${project.id}/milestones`}
                       className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors"
