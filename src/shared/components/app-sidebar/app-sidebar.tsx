@@ -1,6 +1,11 @@
 "use client";
 
-import { ContactRoundIcon, CompassIcon, LogOutIcon } from "lucide-react";
+import {
+  ClipboardListIcon,
+  ContactRoundIcon,
+  CompassIcon,
+  LogOutIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/shared/configs/i18/navigation";
@@ -14,6 +19,11 @@ type NavItem = {
 const primaryItems: NavItem[] = [
   { href: "/directions", labelKey: "directions", icon: CompassIcon },
   { href: "/users", labelKey: "users", icon: ContactRoundIcon },
+  {
+    href: "/protocol-orders",
+    labelKey: "protocolOrders",
+    icon: ClipboardListIcon,
+  },
 ];
 
 export function AppSidebar() {
