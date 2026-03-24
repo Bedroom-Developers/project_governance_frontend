@@ -8,15 +8,15 @@ import {
   Flag,
   FolderTree,
   ListChecks,
-  Loader2,
   Mail,
   MessageSquareText,
   Pin,
   Send,
   Sparkles,
+  Trash2,
   Video,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import * as React from "react";
 import type { Project } from "@/modules/directions/schemas/project.schema";
 import {
@@ -33,6 +33,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -41,12 +42,15 @@ import { SegmentProgress } from "@/shared/components/ui/segment-progress";
 import { Link } from "@/shared/configs/i18/navigation";
 import { cn } from "@/shared/lib/utils";
 import { ObjectPassportDialog } from "./object-passport-dialog";
+import { ProjectCamerasDialog } from "./project-cameras-dialog";
 import { ProjectDashboardDialog } from "./project-dashboard-dialog";
 
 type ProjectsGridProps = {
   projects: Project[];
   directionId: string;
   groupId: string;
+  canDelete?: boolean;
+  onDelete?: (projectId: number) => void;
   className?: string;
 };
 
@@ -54,9 +58,12 @@ export function ProjectsGrid({
   projects,
   directionId,
   groupId,
+  canDelete = false,
+  onDelete,
   className,
 }: ProjectsGridProps) {
   const locale = useLocale();
+  const t = useTranslations("projectsGrid");
   const formatNumber = (value: number) =>
     new Intl.NumberFormat(locale).format(value);
   const formatDateTime = (iso: string) =>
@@ -78,137 +85,105 @@ export function ProjectsGrid({
     "Повышение правопорядка",
   ];
 
-  function CamerasPreviewCard() {
-    const [isLoading, setIsLoading] = React.useState(true);
-
-    React.useEffect(() => {
-      const timeoutId = setTimeout(() => {
-        setIsLoading(false);
-      }, 2500);
-
-      return () => clearTimeout(timeoutId);
-    }, []);
-
-    return (
-      <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-[#111827]">
-            Просмотр видеопотока
-          </p>
-          <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
-            {isLoading ? "Загрузка…" : "Камера не подключена"}
-          </span>
-        </div>
-
-        <div className="mt-4 aspect-video rounded-lg bg-neutral-50 flex items-center justify-center p-4 text-center">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-2">
-              <Loader2 className="size-5 animate-spin text-[#9ca3af]" />
-              <p className="text-sm font-semibold text-[#9ca3af]">
-                Загрузка видеопотока…
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm font-semibold text-[#9ca3af]">
-              Камера не подключена
-            </p>
-          )}
-        </div>
-
-        <p className="mt-3 text-xs text-[#9ca3af]">
-          {isLoading
-            ? "Подключаем видеопоток. Это займет несколько секунд."
-            : "Видеопоток пока недоступен."}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className={cn("grid gap-5 sm:grid-cols-2 xl:grid-cols-3", className)}>
       {projects.map((project) => (
-        <Dialog key={project.id}>
-          <DialogTrigger className="text-left">
-            <Card
-              className={cn(
-                "h-full rounded-xl border border-neutral-200/80 bg-white shadow-[0_4px_18px_rgba(34,48,62,0.08)]",
-                "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(34,48,62,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#696cff]/40",
-              )}
+        <div key={project.id} className="relative">
+          {canDelete && onDelete ? (
+            <button
+              type="button"
+              onClick={() => onDelete(project.id)}
+              className="absolute right-4 top-4 z-10 inline-flex size-9 items-center justify-center rounded-xl border border-red-200 bg-white/95 text-red-500 transition hover:bg-red-50 hover:text-red-600"
+              aria-label={t("delete")}
+              title={t("delete")}
             >
-              <CardContent className="pt-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 space-y-1.5">
-                    <div className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#2f2b3d]">
-                      {project.name}
-                    </div>
-                    <div className="text-xs text-[#a1acb8]">
-                      Ответственный:{" "}
-                      <span className="font-semibold text-[#566a7f]">
-                        {project.ownerName}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]">
-                      Стадия проекта
-                    </div>
-                    <SegmentProgress
-                      value={project.stagePercent}
-                      className="mt-1.5"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div className="rounded-lg border border-neutral-200/70 bg-white px-3 pb-2.5 pt-2 shadow-[0_1px_0_rgba(34,48,62,0.04)]">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]">
-                        Регион
+              <Trash2 className="size-4" />
+            </button>
+          ) : null}
+          <Dialog>
+            <DialogTrigger className="block text-left">
+              <Card
+                className={cn(
+                  "h-full rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,175,255,0.08)]",
+                  "transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,175,255,0.18)] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00BFFF]/30",
+                )}
+              >
+                <CardContent className="pt-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className={cn("min-w-0 space-y-1.5", canDelete ? "pr-12" : "")}>
+                      <div className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#2f2b3d]">
+                        {project.name}
                       </div>
-                      <div className="mt-0.5 text-sm font-semibold text-[#2f2b3d]">
-                        {project.region}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-neutral-200/70 bg-white px-3 pb-2.5 pt-2 shadow-[0_1px_0_rgba(34,48,62,0.04)]">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]">
-                        Задачи
-                      </div>
-                      <div className="mt-0.5 text-sm font-semibold text-[#2f2b3d]">
-                        {formatNumber(project.tasksDone)} из{" "}
-                        {formatNumber(project.tasksTotal)}
+                      <div className="text-xs text-[#a1acb8]">
+                        {t("owner")}:{" "}
+                        <span className="font-semibold text-[#566a7f]">
+                          {project.ownerName}
+                        </span>
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-[#a1acb8]">
+                  <div className="mt-4 space-y-3">
                     <div>
-                      Участники:{" "}
-                      <span className="font-semibold text-[#566a7f]">
-                        {formatNumber(project.participants)}
-                      </span>
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]">
+                        {t("stage")}
+                      </div>
+                      <SegmentProgress
+                        value={project.stagePercent}
+                        className="mt-1.5"
+                      />
                     </div>
-                    <div>
-                      Обновлён:{" "}
-                      <span className="font-semibold text-[#566a7f]">
-                        {formatDateTime(project.lastUpdated)}
-                      </span>
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="rounded-lg border border-neutral-200/70 bg-white px-3 pb-2.5 pt-2 shadow-[0_1px_0_rgba(34,48,62,0.04)]">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]">
+                          {t("region")}
+                        </div>
+                        <div className="mt-0.5 text-sm font-semibold text-[#2f2b3d]">
+                          {project.region}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-neutral-200/70 bg-white px-3 pb-2.5 pt-2 shadow-[0_1px_0_rgba(34,48,62,0.04)]">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]">
+                          {t("tasks")}
+                        </div>
+                        <div className="mt-0.5 text-sm font-semibold text-[#2f2b3d]">
+                          {formatNumber(project.tasksDone)} {t("of")}{" "}
+                          {formatNumber(project.tasksTotal)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-[#a1acb8]">
+                      <div>
+                        {t("participants")}:{" "}
+                        <span className="font-semibold text-[#566a7f]">
+                          {formatNumber(project.participants)}
+                        </span>
+                      </div>
+                      <div>
+                        {t("updated")}:{" "}
+                        <span className="font-semibold text-[#566a7f]">
+                          {formatDateTime(project.lastUpdated)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </DialogTrigger>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
 
-          <DialogContent className="max-w-6xl space-y-6">
+            <DialogContent className="max-w-6xl space-y-6">
             <DialogHeader className="space-y-4 rounded-2xl border border-neutral-200/70 bg-white px-4 py-5 sm:px-6 sm:py-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-1">
                   <DialogTitle className="text-xl font-semibold leading-snug text-[#1f2933]">
                     {project.name}
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Карточка проекта с паспортом объекта, вехами, дашбордом, камерами и историей действий.
+                  </DialogDescription>
                   <p className="text-sm text-[#6b7280]">
-                    Проект в регионе{" "}
+                    {t("projectInRegion")}{" "}
                     <span className="font-medium text-[#374151]">
                       {project.region}
                     </span>
@@ -221,58 +196,23 @@ export function ProjectsGrid({
                       className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors"
                     >
                       <Flag className="size-4 text-[#696cff]" />
-                      Вехи проекта
+                      {t("milestones")}
                       <ArrowRight className="size-4 text-[#9ca3af]" />
                     </Link>
 
                     <ProjectDashboardDialog project={project} />
 
-                    <Dialog>
-                      <DialogTrigger className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors">
-                        <Video className="size-4 text-[#696cff]" />
-                        Камеры
-                      </DialogTrigger>
-                      <DialogContent className="max-w-5xl">
-                        <DialogHeader className="space-y-2">
-                          <DialogTitle className="text-xl font-semibold">
-                            Камеры проекта
-                          </DialogTitle>
-                          <p className="text-sm text-[#6b7280]">
-                            Мониторинг хода стройки в реальном времени
-                          </p>
-                        </DialogHeader>
-
-                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
-                          <div className="space-y-3">
-                            {[
-                              "Въездные ворота",
-                              "Строительная площадка",
-                              "Фасад комплекса",
-                            ].map((camera) => (
-                              <div
-                                key={camera}
-                                className="rounded-xl border border-neutral-200/70 bg-white px-4 py-3"
-                              >
-                                <div className="flex items-center justify-between gap-3">
-                                  <p className="text-sm font-semibold text-[#111827]">
-                                    {camera}
-                                  </p>
-                                  <span className="rounded-full bg-neutral-50 px-3 py-1 text-xs font-semibold text-[#9ca3af]">
-                                    Камера не подключена
-                                  </span>
-                                </div>
-                                <p className="mt-1 text-xs text-[#9ca3af]">
-                                  Как только появится доступ к потоку, здесь
-                                  начнётся realtime-мониторинг.
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-
-                          <CamerasPreviewCard />
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <ProjectCamerasDialog
+                      projectId={project.id}
+                      projectName={project.name}
+                      trigger={
+                        <>
+                          <Video className="size-4 text-[#696cff]" />
+                          {t("cameras")}
+                          <ArrowRight className="size-4 text-[#9ca3af]" />
+                        </>
+                      }
+                    />
                   </div>
                 </div>
 
@@ -929,8 +869,9 @@ export function ProjectsGrid({
                 </Tabs>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       ))}
     </div>
   );

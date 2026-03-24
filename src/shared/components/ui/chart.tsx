@@ -16,6 +16,8 @@ type ChartConfigValue = {
 
 export type ChartConfig = Record<string, ChartConfigValue>;
 
+type ChartCssVars = CSSProperties & Record<`--color-${string}`, string>;
+
 const ChartConfigContext = React.createContext<ChartConfig | null>(null);
 
 function useChartConfig() {
@@ -27,10 +29,10 @@ function useChartConfig() {
 }
 
 function toChartCssVars(config: ChartConfig) {
-  const vars: CSSProperties = {};
+  const vars: ChartCssVars = {};
   for (const [key, value] of Object.entries(config)) {
     if (value.color) {
-      vars[`--color-${key}` as never] = value.color;
+      vars[`--color-${key}`] = value.color;
     }
   }
   return vars;

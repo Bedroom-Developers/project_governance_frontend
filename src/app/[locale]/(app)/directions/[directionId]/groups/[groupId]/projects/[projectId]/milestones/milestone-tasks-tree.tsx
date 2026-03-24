@@ -143,8 +143,8 @@ function TaskTreeNode({
                     </span>
                   }
                 />
-                <TooltipPositioner>
-                  <TooltipContent side="top">{overdue.tooltip}</TooltipContent>
+                <TooltipPositioner side="top">
+                  <TooltipContent>{overdue.tooltip}</TooltipContent>
                 </TooltipPositioner>
               </Tooltip>
             ) : null}

@@ -45,7 +45,7 @@ export function DataTable<TData>({
       {searchPlaceholder ? (
         <div className="flex justify-between gap-3">
           <input
-            className="h-10 w-full max-w-md rounded-lg border border-neutral-200 bg-white px-4 text-sm text-neutral-700 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-[#696cff]/30"
+            className="h-10 w-full max-w-md rounded-xl border border-[#00BFFF]/20 bg-white px-4 text-sm text-[#0a0a0f] outline-none placeholder:text-[#94a3b8] focus:border-[#00BFFF]/50 focus:ring-2 focus:ring-[#00BFFF]/10"
             placeholder={searchPlaceholder}
             value={(table.getState().globalFilter as string) ?? ""}
             onChange={(event) => table.setGlobalFilter(event.target.value)}
@@ -53,7 +53,7 @@ export function DataTable<TData>({
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-neutral-200/80 bg-white shadow-[0_4px_18px_rgba(34,48,62,0.06)]">
+      <div className="animate-fade-in-up overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,175,255,0.08)] transition-shadow duration-300 hover:shadow-[0_4px_24px_rgba(0,175,255,0.12)]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -61,7 +61,7 @@ export function DataTable<TData>({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="h-12 bg-[#f5f5f9] px-4 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#a1acb8]"
+                    className="h-12 bg-[#f8fcff] px-5 text-xs font-semibold uppercase tracking-wider text-[#566a7f]"
                   >
                     {header.isPlaceholder
                       ? null
@@ -81,7 +81,7 @@ export function DataTable<TData>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="border-t border-neutral-100 px-4 py-3 text-sm text-[#2f2b3d]"
+                      className="border-t border-[#00BFFF]/5 px-5 py-3.5 text-sm text-[#0a0a0f] transition-colors hover:bg-[#f8fcff]/50"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -103,7 +103,7 @@ export function DataTable<TData>({
             )}
           </TableBody>
         </Table>
-        <div className="flex items-center justify-between border-t border-neutral-100 px-6 py-4 text-sm text-[#a1acb8]">
+        <div className="flex items-center justify-between border-t border-[#00BFFF]/5 bg-[#f8fcff]/30 px-6 py-3.5 text-sm text-[#566a7f]">
           <div>
             Страница {table.getState().pagination.pageIndex + 1} из{" "}
             {table.getPageCount() || 1}
@@ -111,7 +111,7 @@ export function DataTable<TData>({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="rounded-md border border-neutral-200 px-3 py-1.5 text-sm text-[#566a7f] disabled:opacity-40"
+              className="rounded-xl border border-[#00BFFF]/20 bg-white px-3.5 py-2 text-sm font-medium text-[#566a7f] transition-colors hover:bg-[#00BFFF]/5 disabled:opacity-40"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
@@ -119,7 +119,7 @@ export function DataTable<TData>({
             </button>
             <button
               type="button"
-              className="rounded-md border border-neutral-200 px-3 py-1.5 text-sm text-[#566a7f] disabled:opacity-40"
+              className="rounded-xl border border-[#00BFFF]/20 bg-white px-3.5 py-2 text-sm font-medium text-[#566a7f] transition-colors hover:bg-[#00BFFF]/5 disabled:opacity-40"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >

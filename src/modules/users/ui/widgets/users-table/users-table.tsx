@@ -35,7 +35,7 @@ function createColumns(): ColumnDef<UsersTableUser>[] {
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] ${
             row.original.systemRole === ("admin" as UsersSystemRole)
-              ? "bg-[#eef1ff] text-[#696cff]"
+              ? "bg-[#00BFFF]/10 text-[#0099cc]"
               : row.original.systemRole === ("moderator" as UsersSystemRole)
                 ? "bg-[#f5f5f9] text-[#6b7280]"
                 : "bg-neutral-50 text-[#4b5563]"

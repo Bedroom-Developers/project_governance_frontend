@@ -15,6 +15,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -558,6 +559,9 @@ export function ObjectPassportDialog({ projectName }: { projectName: string }) {
           <DialogTitle className="text-xl font-semibold">
             Паспорт объекта
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Диалог с этапами паспорта объекта, ответственными лицами и прикрепленными документами.
+          </DialogDescription>
           <p className="text-sm text-[#6b7280]">
             {projectName} — этапы до начала стройки и последующие операции
           </p>

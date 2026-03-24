@@ -4,10 +4,10 @@ import { describe, expect, it } from "vitest";
 import { LoginForm } from "../login-form";
 
 describe("LoginForm — форма входа", () => {
-  it("отображает поля email и пароль и кнопку отправки", () => {
+  it("отображает поля логина и пароля и кнопку отправки", () => {
     render(<LoginForm />);
 
-    expect(screen.getByLabelText("emailLabel")).toBeInTheDocument();
+    expect(screen.getByLabelText("loginLabel")).toBeInTheDocument();
     expect(screen.getByLabelText("passwordLabel")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "submit" })).toBeInTheDocument();
   });
@@ -18,7 +18,7 @@ describe("LoginForm — форма входа", () => {
     fireEvent.click(screen.getByRole("button", { name: "submit" }));
 
     expect(
-      await screen.findByText("validation.emailRequired"),
+      await screen.findByText("validation.loginRequired"),
     ).toBeInTheDocument();
     expect(
       await screen.findByText("validation.passwordRequired"),

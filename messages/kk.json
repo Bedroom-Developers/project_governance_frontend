@@ -6,17 +6,109 @@
     "empty": "Жоба бағыттарының тізімі.",
     "cards": {
       "owner": "Жауапты",
+      "delete": "Бағытты жою",
       "projectGroups": "Жоба топтары",
       "projects": "Жобалар"
     }
   },
+  "directionsManage": {
+    "title": "Бағыттар",
+    "subtitle": "Әкім немесе облыс әкімінің орынбасары жаңа бағыттар құрып, жоба паспортын толтыруға жауапты адамды тағайындай алады.",
+    "createTitle": "Жаңа бағыт құру",
+    "toggleCreate": "Бағыт құру",
+    "fields": {
+      "name": "Бағыт атауы",
+      "creator": "Бағытты кім құрады",
+      "executor": "Жоба паспортын толтыруды кімге тапсыру",
+      "task": "Міндет"
+    },
+    "placeholders": {
+      "name": "Мысалы: БН3 Әлеуметтік инфрақұрылым",
+      "creator": "Әкімді немесе орынбасарды таңдаңыз",
+      "executor": "Басшыны / орындаушыны таңдаңыз"
+    },
+    "save": "Бағытты сақтау"
+  },
+  "groupsPage": {
+    "title": "Жоба топтары",
+    "toggleCreate": "Жаңа топ",
+    "createTitle": "Жоба тобын құру",
+    "fields": {
+      "name": "Топ атауы",
+      "owner": "Жауапты"
+    },
+    "placeholders": {
+      "name": "Мысалы: Әлеуметтік нысандар",
+      "owner": "Жауаптыны таңдаңыз"
+    },
+    "save": "Топты сақтау"
+  },
+  "groupsTable": {
+    "headers": {
+      "id": "ID",
+      "name": "Атауы",
+      "owner": "Жауапты",
+      "projects": "Жобалар"
+    },
+    "actions": {
+      "projects": "Жобалар",
+      "delete": "Жою"
+    },
+    "searchPlaceholder": "Атауы немесе жауапты бойынша іздеу…"
+  },
+  "projectsPage": {
+    "title": "Топ жобалары",
+    "toggleCreate": "Жаңа жоба",
+    "createTitle": "Жоба құру",
+    "fields": {
+      "name": "Жоба атауы",
+      "owner": "Жауапты",
+      "region": "Өңір",
+      "stage": "Кезең",
+      "progress": "Прогресс, %",
+      "tasksTotal": "Барлық тапсырма",
+      "tasksDone": "Орындалған тапсырма",
+      "participants": "Қатысушылар"
+    },
+    "placeholders": {
+      "name": "Мысалы: Мектеп құрылысы",
+      "owner": "Жауаптыны таңдаңыз",
+      "region": "Мысалы: Аягөз қ."
+    },
+    "stages": {
+      "initialization": "Инициация",
+      "planning": "Жоспарлау",
+      "execution": "Орындау",
+      "closure": "Аяқтау",
+      "done": "Аяқталды"
+    },
+    "save": "Жобаны сақтау"
+  },
+  "projectsGrid": {
+    "owner": "Жауапты",
+    "delete": "Жобаны жою",
+    "stage": "Жоба кезеңі",
+    "region": "Өңір",
+    "tasks": "Тапсырмалар",
+    "participants": "Қатысушылар",
+    "updated": "Жаңартылды",
+    "projectInRegion": "Өңірдегі жоба",
+    "milestones": "Жоба кезеңдері",
+    "cameras": "Камералар",
+    "of": "ішінен"
+  },
+  "localeSwitcher": {
+    "switchToRu": "Переключить на русский",
+    "switchToKk": "Қазақ тіліне ауыстыру"
+  },
   "app": {
     "sidebar": {
-      "brand": "Платформа",
+      "brand": "Abai Digital Projects",
       "directions": "Бағыттар",
       "projects": "Жобалар",
       "tasks": "Тапсырмалар",
       "team": "Команда",
+      "protocolOrders": "Хаттамалық тапсырмалар",
       "users": "Пайдаланушылар",
       "settings": "Баптаулар",
       "help": "Көмек және ақпарат",
@@ -30,13 +122,13 @@
   },
   "auth": {
     "login": {
-      "pageTitle": "Кіру — Абай облысының жобаларды басқару платформасы",
-      "brand": "Абай облысының жобаларды басқару платформасы",
-      "projectName": "Жобаларды басқару платформасы",
+      "pageTitle": "Кіру — Abai Digital Projects",
+      "brand": "Abai Digital Projects",
+      "projectName": "Abai Digital Projects",
       "headline": "Қайта қош келдіңіз!",
-      "subhead": "Мәліметтеріңізді енгізіңіз",
-      "emailLabel": "Email",
-      "emailPlaceholder": "anna@gmail.com",
+      "subhead": "Платформаға кіру үшін логин мен құпиясөзді енгізіңіз",
+      "loginLabel": "Логин",
+      "loginPlaceholder": "Логинді енгізіңіз",
       "passwordLabel": "Құпиясөз",
       "passwordPlaceholder": "••••••••",
       "showPassword": "Құпиясөзді көрсету",
@@ -50,19 +142,20 @@
         "terms": "Қолдану шарттары",
         "contact": "Байланыс"
       },
-      "demoHint": "Демо: форма нақты авторизациясыз.",
+      "demoHint": "Backend API қоспайтын frontend кіру.",
       "validation": {
-        "emailRequired": "Электрондық поштаны көрсетіңіз",
-        "emailInvalid": "Дұрыс email енгізіңіз",
+        "loginRequired": "Логинді енгізіңіз",
         "passwordRequired": "Құпиясөзді енгізіңіз",
         "passwordMin": "Құпиясөз кемінде 6 таңба болуы керек"
       },
       "toast": {
-        "successTitle": "Кіру орындалды (демо)",
-        "successDescription": "Форма сәтті жіберілді. Нақты авторизацияны кейін қосамыз."
+        "successTitle": "Кіру сәтті өтті",
+        "successDescription": "Сіз жүйеге сәтті кірдіңіз.",
+        "errorTitle": "Логин немесе құпиясөз қате",
+        "errorDescription": "Таңдалған профильдің логині мен құпиясөзін тексеріңіз."
       },
       "side": {
-        "brandShort": "YourBrand"
+        "brandShort": "ADP"
       }
     }
   }

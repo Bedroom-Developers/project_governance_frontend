@@ -4,4 +4,8 @@ export type Direction = {
   ownerName: string;
   projectGroupsCount: number;
   projectsCount: number;
+  createdByName?: string;
+  passportResponsibleName?: string;
+  passportResponsibleTitle?: string;
+  passportTaskNote?: string;
 };

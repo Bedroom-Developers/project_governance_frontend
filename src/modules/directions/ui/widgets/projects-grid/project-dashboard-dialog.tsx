@@ -7,8 +7,10 @@ import {
   CheckCircle2,
   Flame,
   ListChecks,
+  MapPin,
   Users,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useLocale } from "next-intl";
 import * as React from "react";
 import {
@@ -35,10 +37,24 @@ import { ChartContainer, ChartTooltip } from "@/shared/components/ui";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
+
+const YandexMap = dynamic(
+  () =>
+    import("@/shared/components/yandex-map").then((module) => ({
+      default: module.YandexMap,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[280px] animate-pulse rounded-lg bg-[#eef8ff]" />
+    ),
+  },
+);
 
 type ProjectDashboardDialogProps = {
   project: Project;
@@ -307,6 +323,23 @@ export function ProjectDashboardDialog({
   project,
 }: ProjectDashboardDialogProps) {
   const locale = useLocale();
+  const [open, setOpen] = React.useState(false);
+  const [isMapVisible, setIsMapVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) {
+      setIsMapVisible(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsMapVisible(true);
+    }, 120);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [open]);
 
   const formatNumber = React.useCallback(
     (value: number) => new Intl.NumberFormat(locale).format(value),
@@ -420,13 +453,14 @@ export function ProjectDashboardDialog({
   );
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50 hover:text-[#6b7280] transition-colors">
         <BarChart3 className="size-4 text-[#696cff]" />
         Дашборд
         <ArrowRight className="size-4 text-[#9ca3af]" />
       </DialogTrigger>
 
+      {open ? (
       <DialogContent className="max-w-6xl space-y-6">
         <DialogHeader className="space-y-4 rounded-2xl border border-neutral-200/70 bg-white px-4 py-5 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -434,6 +468,9 @@ export function ProjectDashboardDialog({
               <DialogTitle className="text-xl font-semibold leading-snug text-[#1f2933]">
                 Дашборд проекта
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Сводный дашборд проекта с картой, прогрессом, рисками и статусом задач.
+              </DialogDescription>
               <p className="text-sm text-[#6b7280]">{project.name}</p>
             </div>
 
@@ -463,6 +500,36 @@ export function ProjectDashboardDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          <section className="rounded-xl border border-neutral-200/70 bg-white p-4">
+            <div className="flex items-center gap-2">
+              <MapPin className="size-4 text-[#696cff]" />
+              <h3 className="text-sm font-semibold text-[#111827]">
+                Расположение объекта
+              </h3>
+            </div>
+            <div className="mt-3">
+              {isMapVisible ? (
+                <YandexMap
+                  region={project.region}
+                  zoom={12}
+                  showKazakhstanOverview
+                  showAyagoz={project.region?.includes("Аягоз") ?? false}
+                  constructionTitle={project.name}
+                  constructionAddress={
+                    project.region?.includes("Аягоз")
+                      ? "г. Аягоз, ул. Шакенова"
+                      : project.region
+                  }
+                  className="h-[280px]"
+                />
+              ) : (
+                <div className="flex h-[280px] items-center justify-center rounded-lg bg-[#eef8ff] text-sm font-medium text-[#566a7f]">
+                  Загрузка карты...
+                </div>
+              )}
+            </div>
+          </section>
+
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
             <section className="rounded-xl border border-neutral-200/70 bg-white p-4">
               <div className="flex items-start justify-between gap-3">
@@ -800,6 +867,7 @@ export function ProjectDashboardDialog({
           </div>
         </section>
       </DialogContent>
+      ) : null}
     </Dialog>
   );
 }

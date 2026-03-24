@@ -1,5 +1,6 @@
 "use client";
 
+import { LayoutGrid, List, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useLocale } from "next-intl";
 import * as React from "react";
 
@@ -56,6 +57,63 @@ type SelectedNode = {
   kind: NodeType;
   id: string;
 };
+
+type KanbanTone = "neutral" | "primary" | "success";
+
+type KanbanColumnConfig = {
+  id: string;
+  label: string;
+  tone: KanbanTone;
+  isDefault?: boolean;
+};
+
+type MilestoneColumnMap = Record<string, string>;
+
+const KANBAN_VIEW_STORAGE_KEY = "milestones-view-mode";
+const KANBAN_COLUMNS_STORAGE_KEY = "milestones-kanban-columns";
+const KANBAN_MAP_STORAGE_KEY = "milestones-kanban-map";
+
+const DEFAULT_KANBAN_COLUMNS: KanbanColumnConfig[] = [
+  { id: "not-started", label: "Не начат", tone: "neutral", isDefault: true },
+  { id: "in-progress", label: "Исполняется", tone: "primary", isDefault: true },
+  { id: "completed", label: "Завершилось", tone: "success", isDefault: true },
+];
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveToStorage(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore
+  }
+}
+
+function getDefaultKanbanColumnId(state: StageState): string {
+  if (state === "completed") return "completed";
+  if (state === "not-started") return "not-started";
+  return "in-progress";
+}
+
+function getKanbanHeaderClass(tone: KanbanTone): string {
+  if (tone === "success") {
+    return "bg-emerald-50 border-emerald-200 text-emerald-800";
+  }
+  if (tone === "primary") {
+    return "bg-[#eef1ff] border-[#696cff]/40 text-[#696cff]";
+  }
+  return "bg-neutral-50 border-neutral-200 text-neutral-600";
+}
 
 function pluralRu(n: number, one: string, few: string, many: string): string {
   const mod10 = n % 10;
@@ -500,6 +558,136 @@ export function MilestonesClient({
   const [activeTab, setActiveTab] = React.useState<"информация" | "задачи">(
     "информация",
   );
+  const [viewMode, setViewMode] = React.useState<"list" | "kanban">(() => {
+    const saved = loadFromStorage<"list" | "kanban">(KANBAN_VIEW_STORAGE_KEY, "list");
+    return saved === "kanban" ? "kanban" : "list";
+  });
+  const [kanbanColumnsConfig, setKanbanColumnsConfig] = React.useState<
+    KanbanColumnConfig[]
+  >(() => loadFromStorage(KANBAN_COLUMNS_STORAGE_KEY, DEFAULT_KANBAN_COLUMNS));
+  const [milestoneColumnMap, setMilestoneColumnMap] =
+    React.useState<MilestoneColumnMap>(() =>
+      loadFromStorage(KANBAN_MAP_STORAGE_KEY, {}),
+    );
+  const [newColumnName, setNewColumnName] = React.useState("");
+  const [editingColumnId, setEditingColumnId] = React.useState<string | null>(
+    null,
+  );
+  const [editingColumnName, setEditingColumnName] = React.useState("");
+  const [draggedMilestoneId, setDraggedMilestoneId] = React.useState<
+    string | null
+  >(null);
+
+  React.useEffect(() => {
+    saveToStorage(KANBAN_VIEW_STORAGE_KEY, viewMode);
+  }, [viewMode]);
+
+  React.useEffect(() => {
+    saveToStorage(KANBAN_COLUMNS_STORAGE_KEY, kanbanColumnsConfig);
+  }, [kanbanColumnsConfig]);
+
+  React.useEffect(() => {
+    saveToStorage(KANBAN_MAP_STORAGE_KEY, milestoneColumnMap);
+  }, [milestoneColumnMap]);
+
+  React.useEffect(() => {
+    setMilestoneColumnMap((prev) => {
+      const validColumnIds = new Set(kanbanColumnsConfig.map((column) => column.id));
+      const next: MilestoneColumnMap = {};
+      let changed = false;
+
+      for (const node of nodes) {
+        const existing = prev[node.id];
+        const fallback = getDefaultKanbanColumnId(node.status);
+        const resolved = existing && validColumnIds.has(existing) ? existing : fallback;
+        next[node.id] = resolved;
+        if (prev[node.id] !== resolved) {
+          changed = true;
+        }
+      }
+
+      if (Object.keys(prev).length !== Object.keys(next).length) {
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [kanbanColumnsConfig, nodes]);
+
+  const kanbanColumns: Array<{
+    id: string;
+    label: string;
+    tone: KanbanTone;
+    isDefault?: boolean;
+    headerClass: string;
+    milestones: TaskNode[];
+  }> = React.useMemo(
+    () =>
+      kanbanColumnsConfig.map((column) => ({
+        ...column,
+        headerClass: getKanbanHeaderClass(column.tone),
+        milestones: nodes.filter(
+          (node) =>
+            (milestoneColumnMap[node.id] ?? getDefaultKanbanColumnId(node.status)) ===
+            column.id,
+        ),
+      })),
+    [kanbanColumnsConfig, milestoneColumnMap, nodes],
+  );
+
+  const handleAddKanbanColumn = React.useCallback(() => {
+    const label = newColumnName.trim();
+    if (!label) return;
+    setKanbanColumnsConfig((prev) => [
+      ...prev,
+      {
+        id: `custom-${Date.now()}`,
+        label,
+        tone: "primary",
+      },
+    ]);
+    setNewColumnName("");
+  }, [newColumnName]);
+
+  const handleSaveColumnName = React.useCallback(() => {
+    const label = editingColumnName.trim();
+    if (!editingColumnId || !label) return;
+    setKanbanColumnsConfig((prev) =>
+      prev.map((column) =>
+        column.id === editingColumnId ? { ...column, label } : column,
+      ),
+    );
+    setEditingColumnId(null);
+    setEditingColumnName("");
+  }, [editingColumnId, editingColumnName]);
+
+  const handleDeleteColumn = React.useCallback(
+    (columnId: string) => {
+      setKanbanColumnsConfig((prev) => prev.filter((column) => column.id !== columnId));
+      setMilestoneColumnMap((prev) => {
+        const next = { ...prev };
+        for (const node of nodes) {
+          if (next[node.id] === columnId) {
+            next[node.id] = getDefaultKanbanColumnId(node.status);
+          }
+        }
+        return next;
+      });
+    },
+    [nodes],
+  );
+
+  const handleDropToColumn = React.useCallback(
+    (columnId: string) => {
+      if (!draggedMilestoneId) return;
+      setMilestoneColumnMap((prev) => ({
+        ...prev,
+        [draggedMilestoneId]: columnId,
+      }));
+      setDraggedMilestoneId(null);
+    },
+    [draggedMilestoneId],
+  );
 
   const selectedNode = React.useMemo(() => {
     if (!selected) return null;
@@ -520,13 +708,205 @@ export function MilestonesClient({
   return (
     <>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-            Вехи проекта
-          </h1>
-          <p className="mt-1 text-sm text-neutral-500">{project.name}</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+              Вехи проекта
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">{project.name}</p>
+          </div>
+          <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-0.5 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                viewMode === "list"
+                  ? "bg-[#696cff] text-white shadow-sm"
+                  : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+              )}
+            >
+              <List className="size-4" />
+              Список
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("kanban")}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                viewMode === "kanban"
+                  ? "bg-[#696cff] text-white shadow-sm"
+                  : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+              )}
+            >
+              <LayoutGrid className="size-4" />
+              Канбан
+            </button>
+          </div>
         </div>
 
+        {viewMode === "kanban" ? (
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {kanbanColumns.map((col) => (
+              <div
+                key={col.id}
+                className={cn(
+                  "flex min-w-[280px] max-w-[320px] flex-1 flex-col rounded-xl border",
+                  col.headerClass
+                )}
+              >
+                <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+                  <div className="min-w-0">
+                    {editingColumnId === col.id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={editingColumnName}
+                          onChange={(event) => setEditingColumnName(event.target.value)}
+                          className="h-8 w-full rounded-md border border-white/70 bg-white px-2 text-sm text-neutral-900 outline-none"
+                          placeholder="Название колонки"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveColumnName}
+                          className="rounded-md bg-white/90 p-1 text-neutral-700 hover:bg-white"
+                        >
+                          <Save className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingColumnId(null);
+                            setEditingColumnName("");
+                          }}
+                          className="rounded-md bg-white/90 p-1 text-neutral-700 hover:bg-white"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="font-semibold">{col.label}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-medium">
+                      {col.milestones.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingColumnId(col.id);
+                        setEditingColumnName(col.label);
+                      }}
+                      className="rounded-md bg-white/70 p-1 text-neutral-600 hover:bg-white hover:text-neutral-900"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
+                    {!col.isDefault ? (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteColumn(col.id)}
+                        className="rounded-md bg-white/70 p-1 text-neutral-600 hover:bg-white hover:text-rose-700"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "flex flex-1 flex-col gap-3 overflow-y-auto p-3 transition-colors",
+                    draggedMilestoneId ? "bg-white/20" : "",
+                  )}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => handleDropToColumn(col.id)}
+                >
+                  {col.milestones.map((milestoneNode) => {
+                    const state = milestoneNode.status;
+                    const stageLabel = stateToStageLabel(state);
+                    const cardClassByState: Record<StageState, string> = {
+                      "not-started": "border-neutral-200",
+                      started: "border-amber-200",
+                      "in-progress": "border-[#696cff]/60",
+                      completed: "border-emerald-200",
+                    };
+                    const mIdx = parseInt(milestoneNode.id.replace("milestone-", ""), 10) - 1;
+                    const m = String(mIdx + 1).padStart(2, "0");
+                    const planStart = `${15 + mIdx}.${m}.2026`;
+                    const planEnd = `${28 + mIdx}.${m}.2026`;
+
+                    return (
+                      <button
+                        key={milestoneNode.id}
+                        type="button"
+                        draggable
+                        onDragStart={() => setDraggedMilestoneId(milestoneNode.id)}
+                        onDragEnd={() => setDraggedMilestoneId(null)}
+                        onClick={() => {
+                          setSelected({ kind: "milestone", id: milestoneNode.id });
+                          setActiveTab("информация");
+                          setOpen(true);
+                        }}
+                        className={cn(
+                          "w-full rounded-lg border bg-white p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
+                          cardClassByState[state]
+                        )}
+                      >
+                        <h3 className="text-sm font-semibold text-[#1f2933] line-clamp-2">
+                          {milestoneNode.title}
+                        </h3>
+                        <p className="mt-1.5 text-xs text-[#6b7280]">
+                          {milestoneNode.assigner} → {milestoneNode.children[0]?.executor ?? milestoneNode.executor}
+                        </p>
+                        <p className="mt-1 text-[11px] text-[#9ca3af]">
+                          {planStart} — {planEnd}
+                        </p>
+                        <span
+                          className={cn(
+                            "mt-2 inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                            stageBadgeClass(stageLabel)
+                          )}
+                        >
+                          {stageLabel}
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {col.milestones.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-white/70 bg-white/40 px-3 py-8 text-center text-sm text-neutral-500">
+                      Перетащите сюда карточку
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+            <div className="flex min-w-[280px] max-w-[320px] flex-1 flex-col rounded-xl border border-dashed border-neutral-300 bg-white/70 p-4">
+              <div className="text-sm font-semibold text-neutral-700">
+                Новый столбец
+              </div>
+              <p className="mt-1 text-xs text-neutral-500">
+                Создайте свой канбан для целей, задач или этапов.
+              </p>
+              <div className="mt-4 flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={newColumnName}
+                  onChange={(event) => setNewColumnName(event.target.value)}
+                  placeholder="Например: На согласовании"
+                  className="h-10 rounded-lg border border-neutral-200 bg-white px-3 text-sm outline-none transition focus:border-[#696cff]/50 focus:ring-2 focus:ring-[#696cff]/10"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddKanbanColumn}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#696cff] px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[#5b60ff]"
+                >
+                  <Plus className="size-4" />
+                  Добавить столбец
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="grid gap-6">
           <div className="space-y-4">
             {nodes.map((milestoneNode, idx) => {
@@ -669,6 +1049,7 @@ export function MilestonesClient({
             })}
           </div>
         </div>
+        )}
       </div>
 
       {selectedNode && (

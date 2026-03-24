@@ -6,13 +6,104 @@
     "empty": "Список направлений проектов.",
     "cards": {
       "owner": "Ответственный",
+      "delete": "Удалить направление",
       "projectGroups": "Группы проектов",
       "projects": "Проекты"
     }
   },
+  "directionsManage": {
+    "title": "Направления",
+    "subtitle": "Аким или Зам. Акима может создавать новые направления и назначать ответственного за заполнение паспорта проекта.",
+    "createTitle": "Создать новое направление",
+    "toggleCreate": "Создать направление",
+    "fields": {
+      "name": "Название направления",
+      "creator": "Кто создает направление",
+      "executor": "Кому поручить заполнение паспорта проекта",
+      "task": "Обязанность"
+    },
+    "placeholders": {
+      "name": "Например: БН3 Социальная инфраструктура",
+      "creator": "Выберите Акима или Зам. Акима",
+      "executor": "Выберите руководителя / исполнителя"
+    },
+    "save": "Сохранить направление"
+  },
+  "groupsPage": {
+    "title": "Группы проектов",
+    "toggleCreate": "Новая группа",
+    "createTitle": "Создать группу проектов",
+    "fields": {
+      "name": "Название группы",
+      "owner": "Ответственный"
+    },
+    "placeholders": {
+      "name": "Например: Социальные объекты",
+      "owner": "Выберите ответственного"
+    },
+    "save": "Сохранить группу"
+  },
+  "groupsTable": {
+    "headers": {
+      "id": "ID",
+      "name": "Название",
+      "owner": "Ответственный",
+      "projects": "Проекты"
+    },
+    "actions": {
+      "projects": "Проекты",
+      "delete": "Удалить"
+    },
+    "searchPlaceholder": "Поиск по названию или ответственному…"
+  },
+  "projectsPage": {
+    "title": "Проекты группы",
+    "toggleCreate": "Новый проект",
+    "createTitle": "Создать проект",
+    "fields": {
+      "name": "Название проекта",
+      "owner": "Ответственный",
+      "region": "Регион",
+      "stage": "Стадия",
+      "progress": "Прогресс, %",
+      "tasksTotal": "Всего задач",
+      "tasksDone": "Выполнено задач",
+      "participants": "Участники"
+    },
+    "placeholders": {
+      "name": "Например: Строительство школы",
+      "owner": "Выберите ответственного",
+      "region": "Например: г. Аягоз"
+    },
+    "stages": {
+      "initialization": "Инициация",
+      "planning": "Планирование",
+      "execution": "Исполнение",
+      "closure": "Завершение",
+      "done": "Завершен"
+    },
+    "save": "Сохранить проект"
+  },
+  "projectsGrid": {
+    "owner": "Ответственный",
+    "delete": "Удалить проект",
+    "stage": "Стадия проекта",
+    "region": "Регион",
+    "tasks": "Задачи",
+    "participants": "Участники",
+    "updated": "Обновлён",
+    "projectInRegion": "Проект в регионе",
+    "milestones": "Вехи проекта",
+    "cameras": "Камеры",
+    "of": "из"
+  },
+  "localeSwitcher": {
+    "switchToRu": "Переключить на русский",
+    "switchToKk": "Қазақ тіліне ауыстыру"
+  },
   "app": {
     "sidebar": {
-      "brand": "Платформа",
+      "brand": "Abai Digital Projects",
       "directions": "Направления",
       "projects": "Проекты",
       "tasks": "Задачи",
@@ -31,13 +122,13 @@
   },
   "auth": {
     "login": {
-      "pageTitle": "Вход — Платформа управления проектами области Абай",
-      "brand": "Платформа управления проектами области Абай",
-      "projectName": "Платформа управления проектами",
+      "pageTitle": "Вход — Abai Digital Projects",
+      "brand": "Abai Digital Projects",
+      "projectName": "Abai Digital Projects",
       "headline": "С возвращением!",
-      "subhead": "Пожалуйста, введите ваши данные",
-      "emailLabel": "Email",
-      "emailPlaceholder": "anna@gmail.com",
+      "subhead": "Введите логин и пароль для входа в платформу",
+      "loginLabel": "Логин",
+      "loginPlaceholder": "Введите логин",
       "passwordLabel": "Пароль",
       "passwordPlaceholder": "••••••••",
       "showPassword": "Показать пароль",
@@ -51,19 +142,20 @@
         "terms": "Условия использования",
         "contact": "Контакты"
       },
-      "demoHint": "Демо: форма без реальной авторизации.",
+      "demoHint": "Фронтенд-вход без подключения backend API.",
       "validation": {
-        "emailRequired": "Укажите электронную почту",
-        "emailInvalid": "Введите корректный email",
+        "loginRequired": "Укажите логин",
         "passwordRequired": "Введите пароль",
         "passwordMin": "Пароль должен быть не короче 6 символов"
       },
       "toast": {
-        "successTitle": "Вход выполнен (демо)",
-        "successDescription": "Форма отправлена успешно. Подключим реальную авторизацию позже."
+        "successTitle": "Вход выполнен",
+        "successDescription": "Вы успешно вошли в систему.",
+        "errorTitle": "Неверный логин или пароль",
+        "errorDescription": "Проверьте логин и пароль выбранного профиля."
       },
       "side": {
-        "brandShort": "YourBrand"
+        "brandShort": "ADP"
       }
     }
   }

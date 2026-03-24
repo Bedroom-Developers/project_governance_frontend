@@ -1,15 +1,32 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/modules/auth";
 import { Globe } from "@/shared/components/magicui/globe/globe";
+import { AUTH_COOKIE_NAME, getAuthenticatedUserById } from "@/shared/lib/auth";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth.login");
   return { title: t("pageTitle") };
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const cookieStore = await cookies();
+  const currentUser = getAuthenticatedUserById(
+    cookieStore.get(AUTH_COOKIE_NAME)?.value,
+  );
+
+  if (currentUser) {
+    redirect(`/${locale}/directions`);
+  }
+
   return (
     <div className="min-h-[100dvh] bg-neutral-950">
       <div className="grid min-h-[100dvh] grid-cols-1 md:grid-cols-2">

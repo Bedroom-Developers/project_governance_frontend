@@ -12,7 +12,11 @@ import {
   createLoginSchema,
   type LoginFormValues,
 } from "@/modules/auth/schemas/login.schema";
-import { Button, Checkbox, Input, Label } from "@/shared/components/ui";
+import { Checkbox, Input, Label } from "@/shared/components/ui";
+import {
+  authenticateUser,
+  setClientAuthCookie,
+} from "@/shared/lib/auth";
 import { cn } from "@/shared/lib/utils";
 
 type LoginFormProps = {
@@ -28,8 +32,7 @@ export function LoginForm({ className }: LoginFormProps) {
   const schema = useMemo(
     () =>
       createLoginSchema({
-        emailRequired: t("validation.emailRequired"),
-        emailInvalid: t("validation.emailInvalid"),
+        loginRequired: t("validation.loginRequired"),
         passwordRequired: t("validation.passwordRequired"),
         passwordMin: t("validation.passwordMin"),
       }),
@@ -44,18 +47,29 @@ export function LoginForm({ className }: LoginFormProps) {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: "",
+      login: "",
       password: "",
       remember: true,
     },
     mode: "onSubmit",
   });
 
-  const onSubmit = handleSubmit(async () => {
+  const onSubmit = handleSubmit(async (values) => {
+    const authenticatedUser = authenticateUser(values.login, values.password);
+
+    if (!authenticatedUser) {
+      toast.error(t("toast.errorTitle"), {
+        description: t("toast.errorDescription"),
+      });
+      return;
+    }
+
+    setClientAuthCookie(authenticatedUser.id, values.remember ?? true);
     toast.success(t("toast.successTitle"), {
-      description: t("toast.successDescription"),
+      description: `${authenticatedUser.name} — ${authenticatedUser.title}`,
     });
     router.push(`/${locale}/directions`);
+    router.refresh();
   });
 
   return (
@@ -72,23 +86,23 @@ export function LoginForm({ className }: LoginFormProps) {
 
       <form className="grid gap-5" onSubmit={onSubmit} noValidate>
         <div className="grid gap-2">
-          <Label htmlFor="email" className="text-white/80">
-            {t("emailLabel")}
+          <Label htmlFor="login" className="text-white/80">
+            {t("loginLabel")}
           </Label>
           <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder={t("emailPlaceholder")}
+            id="login"
+            type="text"
+            autoComplete="username"
+            placeholder={t("loginPlaceholder")}
             className={cn(
               "h-11 rounded-md border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/10",
-              errors.email && "border-destructive",
+              errors.login && "border-destructive",
             )}
-            aria-invalid={Boolean(errors.email)}
-            {...register("email")}
+            aria-invalid={Boolean(errors.login)}
+            {...register("login")}
           />
-          {errors.email?.message ? (
-            <p className="text-destructive text-sm">{errors.email.message}</p>
+          {errors.login?.message ? (
+            <p className="text-destructive text-sm">{errors.login.message}</p>
           ) : null}
         </div>
 
@@ -97,15 +111,13 @@ export function LoginForm({ className }: LoginFormProps) {
             <Label htmlFor="password" className="text-white/80">
               {t("passwordLabel")}
             </Label>
-            <Button
+            <button
               type="button"
-              variant="link"
-              size="sm"
               className="h-auto px-0 text-xs text-white/70 hover:text-white"
               onClick={() => toast.info(t("demoHint"))}
             >
               {t("forgotPassword")}
-            </Button>
+            </button>
           </div>
           <div className="relative">
             <Input
@@ -120,10 +132,8 @@ export function LoginForm({ className }: LoginFormProps) {
               aria-invalid={Boolean(errors.password)}
               {...register("password")}
             />
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon-sm"
               className="absolute right-1 top-1/2 -translate-y-1/2 text-white/55 hover:bg-white/5 hover:text-white"
               aria-label={
                 isPasswordVisible ? t("hidePassword") : t("showPassword")
@@ -135,7 +145,7 @@ export function LoginForm({ className }: LoginFormProps) {
               ) : (
                 <EyeIcon className="size-4" />
               )}
-            </Button>
+            </button>
           </div>
           {errors.password?.message ? (
             <p className="text-destructive text-sm">
@@ -163,13 +173,13 @@ export function LoginForm({ className }: LoginFormProps) {
           />
         </div>
 
-        <Button
+        <button
           type="submit"
           disabled={isSubmitting}
           className="h-11 w-full rounded-md bg-white text-black hover:bg-white/90"
         >
           {isSubmitting ? t("submitting") : t("submit")}
-        </Button>
+        </button>
       </form>
     </div>
   );

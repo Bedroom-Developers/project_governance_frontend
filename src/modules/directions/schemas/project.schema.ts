@@ -16,4 +16,5 @@ export type Project = {
   tasksTotal: number;
   tasksDone: number;
   participants: number;
+  constructionCoords?: [number, number];
 };

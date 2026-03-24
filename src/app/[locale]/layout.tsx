@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Платформа управления проектами области Абай",
-  description: "Платформа управления проектами, командой и задачами.",
+  title: "Abai Digital Projects",
+  description: "Abai Digital Projects platform for project, team, and task management.",
 };
 
 export default async function LocaleLayout({

@@ -11,7 +11,6 @@ import {
   formatUserCreatedDate,
   getUserDisplayName,
 } from "@/modules/users/utils/user.utils";
-import { Button } from "@/shared/components/ui/button";
 
 export interface UserProfileProps {
   user: User;
@@ -160,22 +159,22 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
           {isEditing && (
             <div className="mt-6 flex space-x-3">
-              <Button
+              <button
                 type="button"
                 onClick={handleSave}
                 disabled={isUpdating}
                 className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
               >
                 {isUpdating ? "Сохранение..." : "Сохранить"}
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
                 onClick={handleCancel}
                 disabled={isUpdating}
                 className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-400 disabled:opacity-50 transition-colors"
               >
                 Отмена
-              </Button>
+              </button>
             </div>
           )}
         </div>
