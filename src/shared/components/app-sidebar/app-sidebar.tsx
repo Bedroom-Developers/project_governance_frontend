@@ -60,13 +60,15 @@ export function AppSidebar({ currentUser }: AppSidebarProps) {
       />
       <div className="relative z-10 px-2 pb-4">
         <div className="flex items-center gap-3 text-[15px] font-semibold tracking-tight text-white">
-          <img
-            src="/logo/logo.svg"
-            alt=""
-            className="size-11 shrink-0 rounded-xl object-contain shadow-lg shadow-[#00BFFF]/20 ring-1 ring-[#00BFFF]/25"
-            width={44}
-            height={44}
-          />
+          <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-lg shadow-[#00BFFF]/20 ring-1 ring-[#00BFFF]/25">
+            <img
+              src="/logo/logoabayoblysy.jpg"
+              alt=""
+              className="size-full object-contain"
+              width={44}
+              height={44}
+            />
+          </div>
           <span className="truncate">{t("brand")}</span>
         </div>
       </div>
