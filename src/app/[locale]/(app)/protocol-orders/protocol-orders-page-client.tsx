@@ -59,7 +59,10 @@ import { getClientAuthenticatedUser } from "@/shared/lib/auth";
 const STORAGE_KEY_ORDERS = "protocol-orders-items";
 const STORAGE_KEY_VIEW = "protocol-orders-active-view";
 const DAY_MS = 24 * 60 * 60 * 1000;
-type Translator = (key: string, values?: Record<string, unknown>) => string;
+type Translator = (
+  key: string,
+  values?: Record<string, string | number | Date>,
+) => string;
 
 type TaskStatus =
   | "new"
@@ -463,15 +466,19 @@ function getDeadlineClasses(item: ProtocolOrder, today: string) {
 function buildDefaultMonitoringNote(
   priority: TaskPriority,
   controlTone: ControlTone,
-  t: Translator,
+  t?: Translator,
 ) {
   if (controlTone === "critical" || priority === "critical") {
-    return t("monitoring.defaultCritical");
+    return t
+      ? t("monitoring.defaultCritical")
+      : "Требуется ежедневный мониторинг и доклад руководству.";
   }
   if (controlTone === "attention" || priority === "high") {
-    return t("monitoring.defaultAttention");
+    return t
+      ? t("monitoring.defaultAttention")
+      : "Контроль раз в неделю с фиксацией промежуточных результатов.";
   }
-  return t("monitoring.defaultStable");
+  return t ? t("monitoring.defaultStable") : "Плановый контроль по графику исполнения.";
 }
 
 function normalizeOrders(items: ProtocolOrder[]) {
