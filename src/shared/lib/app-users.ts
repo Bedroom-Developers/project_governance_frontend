@@ -74,7 +74,7 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
   children: [
     {
       id: "1",
-      name: "Ербол Абилхайырулы Садыр",
+      name: "Ербол Садыр Абилхайырулы",
       title: "Зам. Акима Области Абай",
       sectors: ["Экономика", "Финансы", "Гос заказы"],
       children: [
@@ -179,7 +179,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = ([
     id: "deputy-sadyr",
     login: "sadyr",
     password: "sadyr123",
-    name: "Ербол Абилхайырулы Садыр",
+    name: "Ербол Садыр Абилхайырулы",
     title: "Заместитель акима области Абай",
     role: "deputy",
     nodeId: "1",

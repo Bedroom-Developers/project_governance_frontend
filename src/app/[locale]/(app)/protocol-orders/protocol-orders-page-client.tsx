@@ -118,7 +118,7 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     authorNodeId: "akim",
     authorName: "Берик Уали",
     assigneeNodeId: "1",
-    assigneeName: "Ербол Абилхайырулы Садыр",
+    assigneeName: "Ербол Садыр Абилхайырулы",
     deputyId: "1",
     sector: "Экономика",
     title: "Подготовить отчёт по экономическим показателям за квартал",
@@ -278,7 +278,7 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     templateKey: "cashExecution",
     authorAccountId: "deputy-sadyr",
     authorNodeId: "1",
-    authorName: "Ербол Абилхайырулы Садыр",
+    authorName: "Ербол Садыр Абилхайырулы",
     assigneeNodeId: "1-1",
     assigneeName: "Айдана Сериккызы Кайратова",
     deputyId: "1",
@@ -297,7 +297,7 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     attachmentName: "cash_execution.xlsx",
     createdAt: "2026-03-18",
     reviewedAt: "2026-03-24",
-    reviewByName: "Ербол Абилхайырулы Садыр",
+    reviewByName: "Ербол Садыр Абилхайырулы",
   },
 ];
 

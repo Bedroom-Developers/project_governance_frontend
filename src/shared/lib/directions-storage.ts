@@ -15,9 +15,9 @@ export const DEFAULT_DIRECTIONS: Direction[] = [
   {
     id: "1231",
     name: "БН2 Развитие инфраструктуры",
-    ownerName: "Ербол Садыр",
+    ownerName: "Ербол Садыр Абилхайырулы",
     createdByName: "Берик Уали",
-    passportResponsibleName: "Ербол Садыр",
+    passportResponsibleName: "Ербол Садыр Абилхайырулы",
     passportResponsibleTitle: "Зам. Акима Области Абай",
     passportTaskNote: "Заполнение паспорта проекта и базовой информации",
     projectGroupsCount: 1,
