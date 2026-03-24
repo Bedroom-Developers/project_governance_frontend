@@ -13,7 +13,7 @@ describe("UserDetailsDialog — модальное окно пользовате
     department: "Управление строительства",
     position: "Руководитель направления",
     specialization: "Строительство и инфраструктура",
-    email: "n.abdrakhmanov@akimat.gov.kz",
+    email: "n.abdrakhmanov@test.local",
     phone: "+7 (701) 123-45-67",
     projects: [
       {
@@ -27,7 +27,7 @@ describe("UserDetailsDialog — модальное окно пользовате
     ],
     user: {
       id: 1,
-      email: "n.abdrakhmanov@akimat.gov.kz",
+      email: "n.abdrakhmanov@test.local",
       name: "Нурлан Абдрахманов",
       avatar: "",
       role: "admin",

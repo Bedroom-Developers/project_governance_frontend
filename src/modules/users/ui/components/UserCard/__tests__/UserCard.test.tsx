@@ -9,7 +9,7 @@ describe("UserCard — карточка пользователя", () => {
 
   const mockUser: User = {
     id: 1,
-    email: "test@example.com",
+    email: "test@test.local",
     name: "John Doe",
     avatar: "",
     role: "user",
@@ -34,7 +34,7 @@ describe("UserCard — карточка пользователя", () => {
     render(<UserCard user={mockUser} />);
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("test@example.com")).toBeInTheDocument();
+    expect(screen.getByText("test@test.local")).toBeInTheDocument();
     expect(screen.getByText("Пользователь")).toBeInTheDocument();
     expect(screen.getByText("Активен")).toBeInTheDocument();
     expect(screen.getByText(/Зарегистрирован:/)).toBeInTheDocument();

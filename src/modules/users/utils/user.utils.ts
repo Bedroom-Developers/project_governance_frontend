@@ -11,7 +11,7 @@ import type { User } from "@/modules/users/schemas/user.schema";
  * @returns Имя пользователя или часть email до символа @
  * @example
  * ```typescript
- * const displayName = getUserDisplayName({ name: 'John Doe', email: 'john@example.com' });
+ * const displayName = getUserDisplayName({ name: 'John Doe', email: 'john@test.local' });
  * // Returns: 'John Doe'
  * ```
  */
@@ -26,7 +26,7 @@ export const getUserDisplayName = (user: User): string => {
  * @returns Инициалы пользователя (до 2 символов в верхнем регистре)
  * @example
  * ```typescript
- * const initials = getUserInitials({ name: 'John Doe', email: 'john@example.com' });
+ * const initials = getUserInitials({ name: 'John Doe', email: 'john@test.local' });
  * // Returns: 'JD'
  * ```
  */

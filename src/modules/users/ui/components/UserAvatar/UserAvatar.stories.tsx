@@ -10,7 +10,7 @@ const meta: Meta<typeof UserAvatar> = {
   args: {
     user: {
       id: 1,
-      email: "john.doe@example.com",
+      email: "john.doe@test.local",
       name: "John Doe",
       role: "user",
       isActive: true,
@@ -33,7 +33,7 @@ export const WithAvatar: Story = {
   args: {
     user: {
       id: 2,
-      email: "jane.smith@example.com",
+      email: "jane.smith@test.local",
       name: "Jane Smith",
       avatar:
         "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
@@ -75,7 +75,7 @@ export const LongName: Story = {
   args: {
     user: {
       id: 3,
-      email: "very.long.name.user@example.com",
+      email: "very.long.name.user@test.local",
       name: "Very Long Name User",
       role: "moderator",
       isActive: true,

@@ -46,7 +46,7 @@ describe("useUser — хук пользователя", () => {
 
       const { result } = renderHook(() => useUser(1));
 
-      const updateData = { name: "Updated Name", email: "updated@example.com" };
+      const updateData = { name: "Updated Name", email: "updated@test.local" };
       result.current.updateUser(updateData);
 
       expect(mockMutate).toHaveBeenCalledWith(updateData);
@@ -85,7 +85,7 @@ describe("useUser — хук пользователя", () => {
   describe("хук useUserPermissions", () => {
     const mockCurrentUser: User = {
       id: 1,
-      email: "admin@example.com",
+      email: "admin@test.local",
       name: "Admin User",
       avatar: "",
       role: "admin",
@@ -96,7 +96,7 @@ describe("useUser — хук пользователя", () => {
 
     const mockRegularUser: User = {
       id: 2,
-      email: "user@example.com",
+      email: "user@test.local",
       name: "Regular User",
       avatar: "",
       role: "user",

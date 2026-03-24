@@ -39,7 +39,35 @@ export type HierarchyPerson = {
 
 export const HIERARCHY_STORAGE_KEY = "protocol-orders-hierarchy";
 
-export const DEFAULT_HIERARCHY: HierarchyNode = {
+function normalizeGovernmentText(value?: string) {
+  if (!value) return value ?? "";
+
+  return value
+    .replace(/заместитель мэра/gi, "Заместитель акима")
+    .replace(/зам\. мэра/gi, "Зам. Акима")
+    .replace(/мэр/gi, "аким");
+}
+
+export function normalizeHierarchyNode(node: HierarchyNode): HierarchyNode {
+  return {
+    ...node,
+    title: normalizeGovernmentText(node.title),
+    sectors: node.sectors,
+    children: (node.children ?? []).map(normalizeHierarchyNode),
+  };
+}
+
+function normalizeWorkspaceUser(user: WorkspaceUser): WorkspaceUser {
+  return {
+    ...user,
+    title: normalizeGovernmentText(user.title),
+    department: normalizeGovernmentText(user.department),
+    position: normalizeGovernmentText(user.position),
+    specialization: normalizeGovernmentText(user.specialization),
+  };
+}
+
+export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
   id: "akim",
   name: "Берик Уали",
   title: "Аким Области Абай",
@@ -115,9 +143,9 @@ export const DEFAULT_HIERARCHY: HierarchyNode = {
       ],
     },
   ],
-};
+});
 
-export const WORKSPACE_USERS: WorkspaceUser[] = [
+export const WORKSPACE_USERS: WorkspaceUser[] = ([
   {
     id: "admin",
     login: "admin",
@@ -129,7 +157,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Цифровая платформа",
     position: "Администратор системы",
     specialization: "Управление доступами и настройками платформы",
-    email: "admin@abai-digital.local",
+    email: "admin@test.local",
     phone: "+7 (700) 000-00-01",
   },
   {
@@ -144,7 +172,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Руководство области",
     position: "Аким области",
     specialization: "Общее управление проектами и протокольными поручениями",
-    email: "berik.uali@akimat.gov.kz",
+    email: "berik.uali@test.local",
     phone: "+7 (701) 000-00-02",
   },
   {
@@ -152,14 +180,14 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     login: "sadyr",
     password: "sadyr123",
     name: "Ербол Абилхайырулы Садыр",
-    title: "Зам. Акима Области Абай",
+    title: "Заместитель акима области Абай",
     role: "deputy",
     nodeId: "1",
     organization: "Аппарат акима области Абай",
     department: "Экономика, финансы и госзаказы",
     position: "Заместитель акима области",
     specialization: "Экономический блок и государственные закупки",
-    email: "e.sadyr@akimat.gov.kz",
+    email: "e.sadyr@test.local",
     phone: "+7 (701) 000-00-03",
   },
   {
@@ -167,14 +195,14 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     login: "bakpaev",
     password: "bakpaev123",
     name: "Эльдар Кусманулы Бакпаев",
-    title: "Зам. Акима Области Абай",
+    title: "Заместитель акима области Абай",
     role: "deputy",
     nodeId: "2",
     organization: "Аппарат акима области Абай",
     department: "Кадры, юристы и взаимодействие с акиматами",
     position: "Заместитель акима области",
     specialization: "Оргвопросы, кадры и правовое сопровождение",
-    email: "e.bakpaev@akimat.gov.kz",
+    email: "e.bakpaev@test.local",
     phone: "+7 (701) 000-00-04",
   },
   {
@@ -182,14 +210,14 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     login: "tulenbergenov",
     password: "tulenbergenov123",
     name: "Туленбергенов Серик Тулювгалиевич",
-    title: "Зам. Акима Области Абай",
+    title: "Заместитель акима области Абай",
     role: "deputy",
     nodeId: "3",
     organization: "Аппарат акима области Абай",
     department: "ЖКХ и дороги",
     position: "Заместитель акима области",
     specialization: "Инфраструктура, строительство и дорожная сеть",
-    email: "s.tulenbergenov@akimat.gov.kz",
+    email: "s.tulenbergenov@test.local",
     phone: "+7 (701) 000-00-05",
   },
   {
@@ -197,14 +225,14 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     login: "ospanov",
     password: "ospanov123",
     name: "Думан Рыспекович Оспанов",
-    title: "Зам. Акима Области Абай",
+    title: "Заместитель акима области Абай",
     role: "deputy",
     nodeId: "4",
     organization: "Аппарат акима области Абай",
     department: "Ветеринария и УСХ",
     position: "Заместитель акима области",
     specialization: "Сельское хозяйство и ветеринарный контроль",
-    email: "d.ospanov@akimat.gov.kz",
+    email: "d.ospanov@test.local",
     phone: "+7 (701) 000-00-06",
   },
   {
@@ -212,14 +240,14 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     login: "rakhanov",
     password: "rakhanov123",
     name: "Раханов Мейрлан Акылбекович",
-    title: "Зам. Акима Области Абай",
+    title: "Заместитель акима области Абай",
     role: "deputy",
     nodeId: "5",
     organization: "Аппарат акима области Абай",
     department: "Культура и УВП",
     position: "Заместитель акима области",
     specialization: "Культура и внутренняя политика",
-    email: "m.rakhanov@akimat.gov.kz",
+    email: "m.rakhanov@test.local",
     phone: "+7 (701) 000-00-07",
   },
   {
@@ -234,7 +262,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Отдел экономики и финансов",
     position: "Руководитель отдела",
     specialization: "Планирование, экономический анализ, бюджетирование",
-    email: "a.kairatova@akimat.gov.kz",
+    email: "a.kairatova@test.local",
     phone: "+7 (701) 000-00-08",
   },
   {
@@ -249,7 +277,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Отдел кадров и правового обеспечения",
     position: "Руководитель отдела",
     specialization: "Кадровая работа и юридическое сопровождение",
-    email: "r.akhmetov@akimat.gov.kz",
+    email: "r.akhmetov@test.local",
     phone: "+7 (701) 000-00-09",
   },
   {
@@ -264,7 +292,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Отдел строительства и ЖКХ",
     position: "Руководитель отдела",
     specialization: "Строительство, ЖКХ и проектная координация",
-    email: "k.kazhgaliyeva@akimat.gov.kz",
+    email: "k.kazhgaliyeva@test.local",
     phone: "+7 (701) 000-00-10",
   },
   {
@@ -279,7 +307,7 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Отдел ветеринарии и сельского хозяйства",
     position: "Руководитель отдела",
     specialization: "Ветеринария и агропромышленный сектор",
-    email: "n.nurgaliev@akimat.gov.kz",
+    email: "n.nurgaliev@test.local",
     phone: "+7 (701) 000-00-11",
   },
   {
@@ -294,19 +322,22 @@ export const WORKSPACE_USERS: WorkspaceUser[] = [
     department: "Отдел культуры и внутренней политики",
     position: "Руководитель отдела",
     specialization: "Культура, мероприятия и внутренняя политика",
-    email: "a.tleubekova@akimat.gov.kz",
+    email: "a.tleubekova@test.local",
     phone: "+7 (701) 000-00-12",
   },
-];
+] as WorkspaceUser[]).map(normalizeWorkspaceUser);
 
 export function getWorkspaceUserById(userId?: string | null) {
   if (!userId) return null;
-  return WORKSPACE_USERS.find((item) => item.id === userId) ?? null;
+  const user = WORKSPACE_USERS.find((item) => item.id === userId) ?? null;
+  return user ? normalizeWorkspaceUser(user) : null;
 }
 
 export function getWorkspaceUserByLogin(login: string) {
   const normalized = login.trim().toLowerCase();
-  return WORKSPACE_USERS.find((item) => item.login.toLowerCase() === normalized) ?? null;
+  const user =
+    WORKSPACE_USERS.find((item) => item.login.toLowerCase() === normalized) ?? null;
+  return user ? normalizeWorkspaceUser(user) : null;
 }
 
 export function getRoleLabel(role: WorkspaceRole) {
@@ -369,7 +400,7 @@ export function flattenHierarchy(
   const current: HierarchyPerson = {
     id: root.id,
     name: root.name,
-    title: root.title,
+    title: normalizeGovernmentText(root.title),
     sectors: root.sectors ?? [],
     parentId,
     depth,
@@ -385,13 +416,13 @@ export function flattenHierarchy(
 
 export function findHierarchyNode(root: HierarchyNode, nodeId: string): HierarchyNode | null {
   if (root.id === nodeId) {
-    return root;
+    return normalizeHierarchyNode(root);
   }
 
   for (const child of root.children ?? []) {
     const found = findHierarchyNode(child, nodeId);
     if (found) {
-      return found;
+      return normalizeHierarchyNode(found);
     }
   }
 

@@ -14,7 +14,7 @@ describe("UsersTable — таблица пользователей", () => {
       department: "Управление строительства",
       position: "Руководитель направления",
       specialization: "Строительство и инфраструктура",
-      email: "n.abdrakhmanov@akimat.gov.kz",
+      email: "n.abdrakhmanov@test.local",
       phone: "+7 (701) 123-45-67",
       projects: [
         {
@@ -24,7 +24,7 @@ describe("UsersTable — таблица пользователей", () => {
       ],
       user: {
         id: 1,
-        email: "n.abdrakhmanov@akimat.gov.kz",
+        email: "n.abdrakhmanov@test.local",
         name: "Нурлан Абдрахманов",
         avatar: "",
         role: "admin",
@@ -39,7 +39,7 @@ describe("UsersTable — таблица пользователей", () => {
       department: "Отдел водоснабжения и водоотведения",
       position: "Старший инженер",
       specialization: "Водоснабжение и канализация (ЖКХ)",
-      email: "d.smagulov@zhkh.gov.kz",
+      email: "d.smagulov@test.local",
       phone: "+7 (705) 222-10-01",
       projects: [
         {
@@ -49,7 +49,7 @@ describe("UsersTable — таблица пользователей", () => {
       ],
       user: {
         id: 2,
-        email: "d.smagulov@zhkh.gov.kz",
+        email: "d.smagulov@test.local",
         name: "Данияр Смагулов",
         avatar: "",
         role: "user",

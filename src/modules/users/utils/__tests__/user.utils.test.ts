@@ -14,7 +14,7 @@ import {
 describe("user.utils — утилиты пользователя", () => {
   const mockUser: User = {
     id: 1,
-    email: "test@example.com",
+    email: "test@test.local",
     name: "John Doe",
     avatar: "",
     role: "user",
