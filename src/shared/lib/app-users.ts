@@ -67,6 +67,47 @@ function normalizeWorkspaceUser(user: WorkspaceUser): WorkspaceUser {
   };
 }
 
+export const ABAI_MANAGEMENTS = [
+  "Управление экономики и бюджетного планирования",
+  "Управление финансов",
+  "Управление энергетики и жилищно-коммунального хозяйства",
+  "Управление государственного архитектурно-строительного контроля",
+  "Управление здравоохранения",
+  "Управление предпринимательства и индустриально-инновационного развития",
+  "Управление пассажирского транспорта и автомобильных дорог",
+  "Управление строительства",
+  "Управление государственных закупок",
+  "Управление мобилизационной подготовки и гражданской защиты",
+  "Управление координации занятости и социальных программ",
+  "Управление цифровых технологий",
+  "Управление культуры, развития языков и архивного дела",
+  "Управление внутренней политики",
+  "Управление образования",
+  "Управление физической культуры и спорта",
+  "Управление по вопросам молодежной политики",
+  "Управление по делам религий",
+  "Управление сельского хозяйства",
+  "Управление ветеринарии",
+  "Управление природных ресурсов и регулирования природопользования",
+  "Управление туризма",
+  "Управление архитектуры, градостроительства и земельных отношений",
+] as const;
+
+export const ABAI_REGIONS = [
+  "Семей қаласы",
+  "Курчатов қаласы",
+  "Абай ауданы",
+  "Ақсуат ауданы",
+  "Аягөз ауданы",
+  "Бесқарағай ауданы",
+  "Бородулиха ауданы",
+  "Жаңасемей ауданы",
+  "Жарма ауданы",
+  "Көкпекті ауданы",
+  "Мақаншы ауданы",
+  "Үржар ауданы",
+] as const;
+
 export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
   id: "akim",
   name: "Берик Уали",
@@ -76,7 +117,13 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
       id: "1",
       name: "Ербол Садыр Абилхайырулы",
       title: "Зам. Акима Области Абай",
-      sectors: ["Экономика", "Финансы", "Гос заказы"],
+      sectors: [
+        ABAI_MANAGEMENTS[0],
+        ABAI_MANAGEMENTS[1],
+        ABAI_MANAGEMENTS[8],
+        ABAI_MANAGEMENTS[11],
+        ABAI_MANAGEMENTS[10],
+      ],
       children: [
         {
           id: "1-1",
@@ -90,7 +137,13 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
       id: "2",
       name: "Эльдар Кусманулы Бакпаев",
       title: "Зам. Акима Области Абай",
-      sectors: ["Акимы", "Акимат (кадры, юристы)"],
+      sectors: [
+        ABAI_MANAGEMENTS[9],
+        ABAI_MANAGEMENTS[13],
+        ABAI_MANAGEMENTS[16],
+        ABAI_MANAGEMENTS[17],
+        ABAI_MANAGEMENTS[12],
+      ],
       children: [
         {
           id: "2-1",
@@ -104,7 +157,13 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
       id: "3",
       name: "Туленбергенов Серик Тулювгалиевич",
       title: "Зам. Акима Области Абай",
-      sectors: ["ЖКХ", "Дороги"],
+      sectors: [
+        ABAI_MANAGEMENTS[2],
+        ABAI_MANAGEMENTS[6],
+        ABAI_MANAGEMENTS[7],
+        ABAI_MANAGEMENTS[3],
+        ABAI_MANAGEMENTS[22],
+      ],
       children: [
         {
           id: "3-1",
@@ -118,7 +177,13 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
       id: "4",
       name: "Думан Рыспекович Оспанов",
       title: "Зам. Акима Области Абай",
-      sectors: ["Ветеринария", "УСХ"],
+      sectors: [
+        ABAI_MANAGEMENTS[18],
+        ABAI_MANAGEMENTS[19],
+        ABAI_MANAGEMENTS[14],
+        ABAI_MANAGEMENTS[15],
+        ABAI_MANAGEMENTS[4],
+      ],
       children: [
         {
           id: "4-1",
@@ -132,7 +197,11 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
       id: "5",
       name: "Раханов Мейрлан Акылбекович",
       title: "Зам. Акима Области Абай",
-      sectors: ["Культура", "УВП"],
+      sectors: [
+        ABAI_MANAGEMENTS[5],
+        ABAI_MANAGEMENTS[20],
+        ABAI_MANAGEMENTS[21],
+      ],
       children: [
         {
           id: "5-1",

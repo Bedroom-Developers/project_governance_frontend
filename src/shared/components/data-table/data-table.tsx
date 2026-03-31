@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-table";
 
 import {
+  Button,
+  Input,
   Table,
   TableBody,
   TableCell,
@@ -44,8 +46,8 @@ export function DataTable<TData>({
     <div className={cn("space-y-4", className)}>
       {searchPlaceholder ? (
         <div className="flex justify-between gap-3">
-          <input
-            className="h-10 w-full max-w-md rounded-xl border border-[#00BFFF]/20 bg-white px-4 text-sm text-[#0a0a0f] outline-none placeholder:text-[#94a3b8] focus:border-[#00BFFF]/50 focus:ring-2 focus:ring-[#00BFFF]/10"
+          <Input
+            className="h-10 w-full max-w-md rounded-md border-border bg-background"
             placeholder={searchPlaceholder}
             value={(table.getState().globalFilter as string) ?? ""}
             onChange={(event) => table.setGlobalFilter(event.target.value)}
@@ -53,7 +55,7 @@ export function DataTable<TData>({
         </div>
       ) : null}
 
-      <div className="animate-fade-in-up overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,175,255,0.08)] transition-shadow duration-300 hover:shadow-[0_4px_24px_rgba(0,175,255,0.12)]">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -61,7 +63,7 @@ export function DataTable<TData>({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="h-12 bg-[#f8fcff] px-5 text-xs font-semibold uppercase tracking-wider text-[#566a7f]"
+                    className="h-11 bg-muted/35 px-4 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground"
                   >
                     {header.isPlaceholder
                       ? null
@@ -81,7 +83,7 @@ export function DataTable<TData>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="border-t border-[#00BFFF]/5 px-5 py-3.5 text-sm text-[#0a0a0f] transition-colors hover:bg-[#f8fcff]/50"
+                      className="border-t border-border/70 px-4 py-3 text-sm text-foreground"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -95,7 +97,7 @@ export function DataTable<TData>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-20 px-4 text-center text-sm text-neutral-500"
+                  className="h-20 px-4 text-center text-sm text-muted-foreground"
                 >
                   Нет данных.
                 </TableCell>
@@ -103,28 +105,30 @@ export function DataTable<TData>({
             )}
           </TableBody>
         </Table>
-        <div className="flex items-center justify-between border-t border-[#00BFFF]/5 bg-[#f8fcff]/30 px-6 py-3.5 text-sm text-[#566a7f]">
+        <div className="flex items-center justify-between border-t border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
           <div>
             Страница {table.getState().pagination.pageIndex + 1} из{" "}
             {table.getPageCount() || 1}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="rounded-xl border border-[#00BFFF]/20 bg-white px-3.5 py-2 text-sm font-medium text-[#566a7f] transition-colors hover:bg-[#00BFFF]/5 disabled:opacity-40"
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-md"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               Назад
-            </button>
-            <button
-              type="button"
-              className="rounded-xl border border-[#00BFFF]/20 bg-white px-3.5 py-2 text-sm font-medium text-[#566a7f] transition-colors hover:bg-[#00BFFF]/5 disabled:opacity-40"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-md"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
               Вперёд
-            </button>
+            </Button>
           </div>
         </div>
       </div>

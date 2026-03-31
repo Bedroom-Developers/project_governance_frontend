@@ -75,18 +75,18 @@ export function LoginForm({ className }: LoginFormProps) {
   return (
     <div className={cn("w-full", className)}>
       <div className="mb-8 text-center">
-        <h1 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <h1 className="text-balance text-3xl font-semibold tracking-tight text-[#0f172a] sm:text-4xl">
           {t("projectName")}
         </h1>
-        <div className="mt-4 text-base font-semibold tracking-tight text-white/90">
+        <div className="mt-4 text-base font-semibold tracking-tight text-[#1f2f40]">
           {t("headline")}
         </div>
-        <p className="mt-2 text-sm text-white/60">{t("subhead")}</p>
+        <p className="mt-2 text-sm text-[#5f6f81]">{t("subhead")}</p>
       </div>
 
-      <form className="grid gap-5" onSubmit={onSubmit} noValidate>
+      <form className="grid gap-5 rounded-xl border border-[#dbe5ef] bg-white p-6" onSubmit={onSubmit} noValidate>
         <div className="grid gap-2">
-          <Label htmlFor="login" className="text-white/80">
+          <Label htmlFor="login" className="text-[#3f556c]">
             {t("loginLabel")}
           </Label>
           <Input
@@ -95,7 +95,7 @@ export function LoginForm({ className }: LoginFormProps) {
             autoComplete="username"
             placeholder={t("loginPlaceholder")}
             className={cn(
-              "h-11 rounded-md border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/10",
+              "h-11 rounded-md border-[#dbe5ef] bg-white text-[#0f172a] placeholder:text-[#8da1b3] focus-visible:ring-[#0b74b8]/10",
               errors.login && "border-destructive",
             )}
             aria-invalid={Boolean(errors.login)}
@@ -108,12 +108,12 @@ export function LoginForm({ className }: LoginFormProps) {
 
         <div className="grid gap-2">
           <div className="flex items-center justify-between gap-4">
-            <Label htmlFor="password" className="text-white/80">
+            <Label htmlFor="password" className="text-[#3f556c]">
               {t("passwordLabel")}
             </Label>
             <button
               type="button"
-              className="h-auto px-0 text-xs text-white/70 hover:text-white"
+              className="h-auto px-0 text-xs text-[#5f6f81] hover:text-[#0f172a]"
               onClick={() => toast.info(t("demoHint"))}
             >
               {t("forgotPassword")}
@@ -126,7 +126,7 @@ export function LoginForm({ className }: LoginFormProps) {
               autoComplete="current-password"
               placeholder={t("passwordPlaceholder")}
               className={cn(
-                "h-11 rounded-md border-white/10 bg-white/5 pr-11 text-white placeholder:text-white/35 focus-visible:ring-white/10",
+                "h-11 rounded-md border-[#dbe5ef] bg-white pr-11 text-[#0f172a] placeholder:text-[#8da1b3] focus-visible:ring-[#0b74b8]/10",
                 errors.password && "border-destructive",
               )}
               aria-invalid={Boolean(errors.password)}
@@ -134,7 +134,7 @@ export function LoginForm({ className }: LoginFormProps) {
             />
             <button
               type="button"
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-white/55 hover:bg-white/5 hover:text-white"
+                className="absolute right-1 top-1/2 -translate-y-1/2 text-[#5f6f81] hover:bg-[#f5f8fb] hover:text-[#0f172a]"
               aria-label={
                 isPasswordVisible ? t("hidePassword") : t("showPassword")
               }
@@ -165,9 +165,9 @@ export function LoginForm({ className }: LoginFormProps) {
                   onCheckedChange={(checked) =>
                     field.onChange(Boolean(checked))
                   }
-                  className="border-white/25 data-[checked]:border-white/40 data-[checked]:bg-white data-[checked]:text-black"
+                  className="border-[#b9cad9] data-[checked]:border-[#0b74b8] data-[checked]:bg-[#0b74b8] data-[checked]:text-white"
                 />
-                <span className="text-sm text-white/70">{t("rememberMe")}</span>
+                <span className="text-sm text-[#5f6f81]">{t("rememberMe")}</span>
               </div>
             )}
           />
@@ -176,7 +176,7 @@ export function LoginForm({ className }: LoginFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 w-full rounded-md bg-white text-black hover:bg-white/90"
+          className="h-11 w-full rounded-md bg-[#0b74b8] text-white transition hover:bg-[#085f96]"
         >
           {isSubmitting ? t("submitting") : t("submit")}
         </button>

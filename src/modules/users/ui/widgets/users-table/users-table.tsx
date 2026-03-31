@@ -23,7 +23,7 @@ function createColumns(): ColumnDef<UsersTableUser>[] {
       header: "ФИО",
       accessorKey: "fio",
       cell: ({ getValue }) => (
-        <span className="truncate text-[#2f2b3d] font-semibold">
+        <span className="truncate font-semibold text-[#1f2f40]">
           {getValue<string>()}
         </span>
       ),
@@ -35,10 +35,10 @@ function createColumns(): ColumnDef<UsersTableUser>[] {
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] ${
             row.original.systemRole === ("admin" as UsersSystemRole)
-              ? "bg-[#00BFFF]/10 text-[#0099cc]"
+              ? "bg-[#0b74b8]/10 text-[#085f96]"
               : row.original.systemRole === ("moderator" as UsersSystemRole)
-                ? "bg-[#f5f5f9] text-[#6b7280]"
-                : "bg-neutral-50 text-[#4b5563]"
+                ? "bg-[#eef2f6] text-[#4e6276]"
+                : "bg-[#f4f7fa] text-[#4e6276]"
           }`}
         >
           {row.original.systemRole === ("admin" as UsersSystemRole)
@@ -54,10 +54,10 @@ function createColumns(): ColumnDef<UsersTableUser>[] {
       accessorKey: "department",
       cell: ({ row }) => (
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-[#2f2b3d]">
+          <div className="text-sm font-semibold text-[#1f2f40]">
             {row.original.organization} / {row.original.department}
           </div>
-          <div className="mt-0.5 text-xs text-[#566a7f] truncate">
+          <div className="mt-0.5 truncate text-xs text-[#5f6f81]">
             {row.original.position}
           </div>
         </div>
@@ -77,13 +77,13 @@ function createColumns(): ColumnDef<UsersTableUser>[] {
               {visible.map((p, idx) => (
                 <div
                   key={`${p.projectName}-${idx}`}
-                  className="truncate text-sm text-[#4b5563]"
+                  className="truncate text-sm text-[#4e6276]"
                 >
-                  <span className="font-semibold text-[#2f2b3d]">
+                  <span className="font-semibold text-[#1f2f40]">
                     {p.projectName}
                   </span>
                   {": "}
-                  <span className="text-[#566a7f] font-medium">
+                  <span className="font-medium text-[#5f6f81]">
                     {p.projectRole}
                   </span>
                 </div>
@@ -96,7 +96,7 @@ function createColumns(): ColumnDef<UsersTableUser>[] {
             <UserDetailsDialog
               item={row.original}
               trigger={
-                <span className="inline-flex w-full items-center justify-start gap-2 rounded-lg border border-neutral-200/70 bg-white px-3 py-1.5 text-xs font-semibold text-[#566a7f] shadow-[0_1px_0_rgba(34,48,62,0.04)] hover:bg-neutral-50">
+                <span className="inline-flex w-full items-center justify-start gap-2 rounded-md border border-[#dbe5ef] bg-white px-3 py-1.5 text-xs font-semibold text-[#3f556c] hover:bg-[#f5f8fb]">
                   Подробнее
                 </span>
               }

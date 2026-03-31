@@ -163,13 +163,13 @@ export function DirectionsPageClient() {
   if (!isHydrated) {
     return (
       <div className="space-y-6">
-        <div className="animate-fade-in-up">
-          <h1 className="text-2xl font-bold tracking-tight text-[#0a0a0f]">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#0f172a]">
             {t("title")}
           </h1>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-[0_2px_16px_rgba(0,175,255,0.08)]">
-          <div className="h-10 animate-pulse rounded-xl bg-[#eef8ff]" />
+        <div className="rounded-lg border border-[#dbe5ef] bg-white p-5">
+          <div className="h-10 animate-pulse rounded-md bg-[#edf3f8]" />
         </div>
       </div>
     );
@@ -177,25 +177,25 @@ export function DirectionsPageClient() {
 
   return (
     <div className="space-y-6">
-      <div className="animate-fade-in-up">
-        <h1 className="text-2xl font-bold tracking-tight text-[#0a0a0f]">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#0f172a]">
           {t("title")}
         </h1>
-        <div className="mt-1 text-sm text-[#566a7f]">
+        <div className="mt-1 text-sm text-[#5f6f81]">
           {t("subtitle")}
         </div>
         {currentUser ? (
-          <div className="mt-2 inline-flex rounded-full bg-[#eef8ff] px-3 py-1 text-xs font-semibold text-[#0099cc]">
+          <div className="mt-2 inline-flex rounded-full bg-[#edf3f8] px-3 py-1 text-xs font-semibold text-[#085f96]">
             Текущий профиль: {currentUser.name} — {currentUser.title}
           </div>
         ) : null}
       </div>
 
-      <div className="animate-fade-in-up rounded-2xl bg-white p-5 shadow-[0_2px_16px_rgba(0,175,255,0.08)]">
+      <div className="rounded-lg border border-[#dbe5ef] bg-white p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Plus className="size-4 text-[#00BFFF]" />
-            <h2 className="text-base font-semibold text-[#0a0a0f]">
+            <Plus className="size-4 text-[#0b74b8]" />
+            <h2 className="text-base font-semibold text-[#0f172a]">
               {t("createTitle")}
             </h2>
           </div>
@@ -203,7 +203,7 @@ export function DirectionsPageClient() {
             <button
               type="button"
               onClick={() => setIsCreateOpen((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[#00BFFF]/20 bg-[#f8fcff] px-4 py-2 text-sm font-medium text-[#0099cc] transition hover:bg-[#eef8ff]"
+              className="inline-flex items-center gap-2 rounded-md border border-[#dbe5ef] bg-[#f5f8fb] px-4 py-2 text-sm font-medium text-[#085f96] transition hover:bg-[#ebf1f6]"
             >
               {isCreateOpen ? (
                 <ChevronDown className="size-4" />
@@ -231,7 +231,7 @@ export function DirectionsPageClient() {
                   value={directionName}
                   onChange={(event) => setDirectionName(event.target.value)}
                   placeholder={t("placeholders.name")}
-                  className="h-10 w-full rounded-xl border border-[#00BFFF]/20 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/50 focus:ring-2 focus:ring-[#00BFFF]/10"
+                  className="h-10 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/45 focus:ring-2 focus:ring-[#0b74b8]/10"
                 />
               </div>
 
@@ -243,7 +243,7 @@ export function DirectionsPageClient() {
                   value={creatorId}
                   onChange={(event) => setCreatorId(event.target.value)}
                   disabled={currentUser?.role !== "admin"}
-                  className="h-10 w-full rounded-xl border border-[#00BFFF]/20 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/50 focus:ring-2 focus:ring-[#00BFFF]/10"
+                  className="h-10 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/45 focus:ring-2 focus:ring-[#0b74b8]/10"
                 >
                   <option value="">{t("placeholders.creator")}</option>
                   {creators.map((person) => (
@@ -261,7 +261,7 @@ export function DirectionsPageClient() {
                 <select
                   value={executorId}
                   onChange={(event) => setExecutorId(event.target.value)}
-                  className="h-10 w-full rounded-xl border border-[#00BFFF]/20 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/50 focus:ring-2 focus:ring-[#00BFFF]/10"
+                  className="h-10 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/45 focus:ring-2 focus:ring-[#0b74b8]/10"
                 >
                   <option value="">{t("placeholders.executor")}</option>
                   {executors.map((person) => (
@@ -280,7 +280,7 @@ export function DirectionsPageClient() {
                   value={taskNote}
                   onChange={(event) => setTaskNote(event.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-[#00BFFF]/20 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#00BFFF]/50 focus:ring-2 focus:ring-[#00BFFF]/10"
+                  className="w-full rounded-md border border-[#dbe5ef] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0b74b8]/45 focus:ring-2 focus:ring-[#0b74b8]/10"
                 />
               </div>
             </div>
@@ -289,7 +289,7 @@ export function DirectionsPageClient() {
               <button
                 type="button"
                 onClick={handleCreateDirection}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-[#00BFFF] to-[#0099cc] px-5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(0,175,255,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_8px_28px_rgba(0,175,255,0.5)]"
+                className="inline-flex h-10 items-center gap-2 rounded-md bg-[#0b74b8] px-5 text-sm font-semibold text-white transition hover:bg-[#085f96]"
               >
                 <Save className="size-4" />
                 {t("save")}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -22,10 +22,12 @@ import {
   Search,
   Send,
   ShieldCheck,
+  Trash2,
   UserRound,
   XCircle,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   Area,
   AreaChart,
@@ -44,6 +46,7 @@ import {
 import { HierarchyChart } from "@/shared/components/hierarchy-chart/hierarchy-chart";
 import type { WorkspaceUser } from "@/shared/lib/app-users";
 import {
+  ABAI_REGIONS,
   canAssignProtocolOrders,
   canEditHierarchy,
   DEFAULT_HIERARCHY,
@@ -55,9 +58,14 @@ import {
   type HierarchyNode,
 } from "@/shared/lib/app-users";
 import { getClientAuthenticatedUser } from "@/shared/lib/auth";
+import {
+  downloadProtocolOrdersReportPdf,
+  downloadProtocolOrdersReportXls,
+} from "@/shared/lib/protocol-orders-report-export";
 
 const STORAGE_KEY_ORDERS = "protocol-orders-items";
 const STORAGE_KEY_VIEW = "protocol-orders-active-view";
+const STORAGE_KEY_CALENDAR_NOTES = "protocol-orders-calendar-notes";
 const DAY_MS = 24 * 60 * 60 * 1000;
 type Translator = (
   key: string,
@@ -92,6 +100,7 @@ type ProtocolOrder = {
   assigneeName: string;
   deputyId: string;
   sector: string;
+  location?: string;
   title: string;
   description: string;
   deadline: string;
@@ -110,6 +119,34 @@ type ProtocolOrder = {
   reviewByName?: string;
 };
 
+type CalendarNote = {
+  id: string;
+  text: string;
+};
+
+function normalizeCalendarNotes(value: unknown): Record<string, CalendarNote[]> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  const raw = value as Record<string, unknown>;
+  const result: Record<string, CalendarNote[]> = {};
+  for (const [dateKey, list] of Object.entries(raw)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
+    if (!Array.isArray(list)) continue;
+    const notes: CalendarNote[] = [];
+    for (const entry of list) {
+      if (!entry || typeof entry !== "object") continue;
+      const row = entry as Record<string, unknown>;
+      const id = typeof row.id === "string" ? row.id : "";
+      const text = typeof row.text === "string" ? row.text.trim().slice(0, 2000) : "";
+      if (!id || !text) continue;
+      notes.push({ id, text });
+    }
+    if (notes.length > 0) result[dateKey] = notes;
+  }
+  return result;
+}
+
 const INITIAL_ORDERS: ProtocolOrder[] = [
   {
     id: 101,
@@ -120,7 +157,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "1",
     assigneeName: "Ербол Садыр Абилхайырулы",
     deputyId: "1",
-    sector: "Экономика",
+    sector: "Управление экономики и бюджетного планирования",
+    location: "Семей қаласы",
     title: "Подготовить отчёт по экономическим показателям за квартал",
     description: "Собрать сводные показатели по проектам, бюджетам, рискам и исполнению KPI.",
     deadline: "2026-03-25",
@@ -145,7 +183,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "3",
     assigneeName: "Туленбергенов Серик Тулювгалиевич",
     deputyId: "3",
-    sector: "ЖКХ",
+    sector: "Управление энергетики и жилищно-коммунального хозяйства",
+    location: "Абай ауданы",
     title: "Актуализировать план по модернизации водоснабжения",
     description: "Подготовить предложения по корректировке сроков и финансированию с учетом подрядчиков.",
     deadline: "2026-03-28",
@@ -167,7 +206,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "3-1",
     assigneeName: "Камария Кажгалиева",
     deputyId: "3",
-    sector: "ЖКХ",
+    sector: "Управление строительства",
+    location: "Курчатов қаласы",
     title: "Подготовить сводку по строительству спортивного комплекса",
     description: "Собрать статус по подрядчикам, освоению бюджета, отклонениям и рискам срыва графика.",
     deadline: "2026-03-24",
@@ -189,7 +229,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "2-1",
     assigneeName: "Руслан Бекенулы Ахметов",
     deputyId: "2",
-    sector: "Акимат (кадры, юристы)",
+    sector: "Управление внутренней политики",
+    location: "Жаңасемей ауданы",
     title: "Подготовить правовое заключение по кадровой комиссии",
     description: "Согласовать пакет документов и приложить итоговое заключение в PDF.",
     deadline: "2026-03-26",
@@ -214,7 +255,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "4",
     assigneeName: "Думан Рыспекович Оспанов",
     deputyId: "4",
-    sector: "Ветеринария",
+    sector: "Управление ветеринарии",
+    location: "Үржар ауданы",
     title: "Провести мониторинг вакцинации скота по районам",
     description: "Собрать фактическое исполнение, проблемные точки и предложения по усилению контроля.",
     deadline: "2026-03-22",
@@ -239,7 +281,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "5",
     assigneeName: "Раханов Мейрлан Акылбекович",
     deputyId: "5",
-    sector: "Культура",
+    sector: "Управление культуры, развития языков и архивного дела",
+    location: "Аягөз ауданы",
     title: "Подготовить план культурных мероприятий на квартал",
     description: "Сформировать календарь мероприятий с бюджетом, ответственными и KPI посещаемости.",
     deadline: "2026-03-29",
@@ -260,7 +303,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "2",
     assigneeName: "Эльдар Кусманулы Бакпаев",
     deputyId: "2",
-    sector: "Акимы",
+    sector: "Управление мобилизационной подготовки и гражданской защиты",
+    location: "Жарма ауданы",
     title: "Собрать статус по выездным приемам граждан районных акимов",
     description: "Нужна единая таблица по обращениям, срокам ответа и просроченным кейсам.",
     deadline: "2026-03-27",
@@ -282,7 +326,8 @@ const INITIAL_ORDERS: ProtocolOrder[] = [
     assigneeNodeId: "1-1",
     assigneeName: "Айдана Сериккызы Кайратова",
     deputyId: "1",
-    sector: "Финансы",
+    sector: "Управление финансов",
+    location: "Семей қаласы",
     title: "Подготовить анализ кассового исполнения по приоритетным проектам",
     description: "Выделить проекты с отставанием по освоению и предложить корректирующие меры.",
     deadline: "2026-03-30",
@@ -324,7 +369,7 @@ const CONTROL_ORDER: Record<ControlTone, number> = {
 };
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
-  new: "#00BFFF",
+  new: "#0b74b8",
   in_progress: "#f59e0b",
   on_review: "#8b5cf6",
   approved: "#10b981",
@@ -338,7 +383,7 @@ function getStatusLabel(status: TaskStatus, t: Translator) {
 
 function getStatusClasses(status: TaskStatus) {
   const map: Record<TaskStatus, string> = {
-    new: "bg-[#00BFFF]/10 text-[#0099cc] ring-[#00BFFF]/30",
+    new: "bg-[#0b74b8]/10 text-[#085f96] ring-[#0b74b8]/30",
     in_progress: "bg-amber-50 text-amber-700 ring-amber-600/20",
     on_review: "bg-violet-50 text-violet-700 ring-violet-600/20",
     approved: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
@@ -356,7 +401,7 @@ function getPriorityClasses(priority: TaskPriority) {
   const map: Record<TaskPriority, string> = {
     critical: "bg-rose-50 text-rose-700 ring-rose-600/20",
     high: "bg-amber-50 text-amber-700 ring-amber-600/20",
-    medium: "bg-sky-50 text-sky-700 ring-sky-600/20",
+    medium: "bg-blue-50 text-blue-700 ring-blue-600/20",
     low: "bg-slate-50 text-slate-700 ring-slate-600/20",
   };
   return map[priority];
@@ -611,17 +656,17 @@ function MetricCard({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex h-full min-h-[128px] flex-col justify-between rounded-[24px] border border-[#00BFFF]/10 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.055)]">
+    <div className="flex h-full min-h-[128px] flex-col justify-between rounded-lg border border-[#dbe5ef] bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className={`text-2xl font-bold ${accent}`}>{value}</div>
           <div className="mt-1 text-sm font-medium text-[#0f172a]">{label}</div>
         </div>
-        <div className="rounded-2xl bg-[#f3faff] p-2.5 text-[#0099cc] ring-1 ring-[#00BFFF]/10">
+        <div className="rounded-lg bg-[#edf3f8] p-2.5 text-[#085f96] ring-1 ring-[#dbe5ef]">
           <Icon className="size-5" />
         </div>
       </div>
-      <div className="mt-4 border-t border-[#edf5fb] pt-3 text-xs leading-5 text-[#64748b]">
+      <div className="mt-4 border-t border-[#e7edf3] pt-3 text-xs leading-5 text-[#5f6f81]">
         {hint}
       </div>
     </div>
@@ -638,6 +683,7 @@ export function ProtocolOrdersPageClient() {
   const [activeView, setActiveView] = useState<ViewId>("dashboard");
   const [assigneeId, setAssigneeId] = useState("");
   const [sector, setSector] = useState("");
+  const [location, setLocation] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -658,11 +704,18 @@ export function ProtocolOrdersPageClient() {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() =>
     toInputDate(new Date()),
   );
+  const [calendarNotesByDate, setCalendarNotesByDate] = useState<
+    Record<string, CalendarNote[]>
+  >({});
+  const [calendarNoteDraft, setCalendarNoteDraft] = useState("");
 
   useEffect(() => {
     setHierarchy(normalizeHierarchyNode(loadFromStorage(HIERARCHY_STORAGE_KEY, DEFAULT_HIERARCHY)));
     setItems(normalizeOrders(loadFromStorage(STORAGE_KEY_ORDERS, INITIAL_ORDERS)));
     setActiveView(loadFromStorage(STORAGE_KEY_VIEW, "dashboard"));
+    setCalendarNotesByDate(
+      normalizeCalendarNotes(loadFromStorage(STORAGE_KEY_CALENDAR_NOTES, {})),
+    );
     setCurrentUser(getClientAuthenticatedUser());
     setIsHydrated(true);
   }, []);
@@ -717,6 +770,14 @@ export function ProtocolOrdersPageClient() {
     if (!isHydrated) return;
     saveToStorage(STORAGE_KEY_VIEW, activeView);
   }, [activeView, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    const pruned = Object.fromEntries(
+      Object.entries(calendarNotesByDate).filter(([, notes]) => notes.length > 0),
+    );
+    saveToStorage(STORAGE_KEY_CALENDAR_NOTES, pruned);
+  }, [calendarNotesByDate, isHydrated]);
 
   const today = useMemo(() => toInputDate(new Date()), []);
 
@@ -822,6 +883,81 @@ export function ProtocolOrdersPageClient() {
     [today, visibleItems],
   );
 
+  const reportExportTable = useMemo(() => {
+    const headers = [
+      t("reports.headers.task"),
+      t("reports.deadline"),
+      t("reports.headers.assignee"),
+      t("reports.headers.sector"),
+      t("reports.headers.status"),
+      t("reports.headers.control"),
+      t("reports.headers.reviewedBy"),
+    ];
+    const rows = visibleItems.map((item) => [
+      getOrderText(item, "title"),
+      formatDate(item.deadline, locale, {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }),
+      item.assigneeName,
+      item.location
+        ? `${getSectorLabel(item.sector)} / ${item.location}`
+        : getSectorLabel(item.sector),
+      getStatusLabel(item.status, t),
+      getControlLabel(item.controlTone, t),
+      item.reviewByName ?? t("reports.pending"),
+    ]);
+    return { headers, rows };
+  }, [locale, t, visibleItems]);
+
+  const handleExportReportXls = useCallback(() => {
+    if (visibleItems.length === 0) {
+      toast.error(t("reports.exportEmpty"));
+      return;
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    try {
+      downloadProtocolOrdersReportXls({
+        sheetName: t("reports.title"),
+        fileBase: `protocol-orders-report-${stamp}`,
+        headers: reportExportTable.headers,
+        rows: reportExportTable.rows,
+      });
+    } catch {
+      toast.error(t("reports.exportFailed"));
+    }
+  }, [reportExportTable.headers, reportExportTable.rows, t, visibleItems.length]);
+
+  const handleExportReportPdf = useCallback(async () => {
+    if (visibleItems.length === 0) {
+      toast.error(t("reports.exportEmpty"));
+      return;
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    const generatedAt = new Intl.DateTimeFormat(locale === "kk" ? "kk-KZ" : "ru-RU", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(new Date());
+    try {
+      await downloadProtocolOrdersReportPdf({
+        title: t("reports.title"),
+        subtitle: generatedAt,
+        headers: reportExportTable.headers,
+        rows: reportExportTable.rows,
+        fileBase: `protocol-orders-report-${stamp}`,
+      });
+    } catch {
+      toast.error(t("reports.exportFailed"));
+    }
+  }, [
+    locale,
+    reportExportTable.headers,
+    reportExportTable.rows,
+    t,
+    visibleItems.length,
+  ]);
+
   const sectorSummary = useMemo(() => {
     const map = new Map<
       string,
@@ -898,7 +1034,65 @@ export function ProtocolOrdersPageClient() {
 
   const monthGrid = useMemo(() => getMonthGrid(calendarAnchor), [calendarAnchor]);
 
+  const calendarCellPreviews = useMemo(() => {
+    const map: Record<
+      string,
+      {
+        preview: Array<
+          | { kind: "task"; key: string; item: ProtocolOrder }
+          | { kind: "note"; key: string; text: string }
+        >;
+        total: number;
+      }
+    > = {};
+    for (const date of monthGrid) {
+      const key = toInputDate(date);
+      const tasks = calendarItemsByDate[key] ?? [];
+      const notes = calendarNotesByDate[key] ?? [];
+      const combined = [
+        ...tasks.map((item) => ({
+          kind: "task" as const,
+          key: `task-${item.id}`,
+          item,
+        })),
+        ...notes.map((note) => ({
+          kind: "note" as const,
+          key: `note-${note.id}`,
+          text: note.text,
+        })),
+      ];
+      map[key] = { preview: combined.slice(0, 3), total: combined.length };
+    }
+    return map;
+  }, [calendarItemsByDate, calendarNotesByDate, monthGrid]);
+
   const selectedDateItems = calendarItemsByDate[selectedCalendarDate] ?? [];
+  const selectedDateNotes = calendarNotesByDate[selectedCalendarDate] ?? [];
+
+  const handleAddCalendarNote = useCallback(() => {
+    const text = calendarNoteDraft.trim();
+    if (!text) return;
+    const id = `n-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    setCalendarNotesByDate((prev) => ({
+      ...prev,
+      [selectedCalendarDate]: [...(prev[selectedCalendarDate] ?? []), { id, text }],
+    }));
+    setCalendarNoteDraft("");
+  }, [calendarNoteDraft, selectedCalendarDate]);
+
+  const handleRemoveCalendarNote = useCallback(
+    (noteId: string) => {
+      setCalendarNotesByDate((prev) => {
+        const list = prev[selectedCalendarDate] ?? [];
+        const nextList = list.filter((n) => n.id !== noteId);
+        const next = { ...prev };
+        if (nextList.length === 0) delete next[selectedCalendarDate];
+        else next[selectedCalendarDate] = nextList;
+        return next;
+      });
+    },
+    [selectedCalendarDate],
+  );
 
   const views = [
     { id: "dashboard" as ViewId, label: t("views.dashboard"), icon: LayoutDashboard },
@@ -922,7 +1116,7 @@ export function ProtocolOrdersPageClient() {
     if (!currentUser || !canCreateOrders) return;
 
     const person = assignablePeople.find((item) => item.id === assigneeId);
-    if (!person || !sector || !title.trim() || !deadline) return;
+    if (!person || !sector || !location || !title.trim() || !deadline) return;
 
     const nextOrder: ProtocolOrder = {
       id: Date.now(),
@@ -936,6 +1130,7 @@ export function ProtocolOrdersPageClient() {
           ? currentUser.nodeId ?? person.parentId ?? person.id
           : person.parentId ?? person.id,
       sector,
+      location,
       title: title.trim(),
       description: description.trim(),
       deadline,
@@ -953,6 +1148,7 @@ export function ProtocolOrdersPageClient() {
     setItems((prev) => [nextOrder, ...prev]);
     setAssigneeId("");
     setSector("");
+    setLocation("");
     setTitle("");
     setDescription("");
     setDeadline("");
@@ -1033,13 +1229,13 @@ export function ProtocolOrdersPageClient() {
   if (!isHydrated || !currentUser) {
     return (
       <div className="space-y-6">
-        <div className="animate-fade-in-up">
+        <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#0a0a0f]">
             {t("loadingTitle")}
           </h1>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-[0_2px_16px_rgba(0,175,255,0.08)]">
-          <div className="h-12 animate-pulse rounded-xl bg-[#eef8ff]" />
+        <div className="rounded-lg border border-[#dbe5ef] bg-white p-5">
+          <div className="h-12 animate-pulse rounded-md bg-[#edf3f8]" />
         </div>
       </div>
     );
@@ -1047,24 +1243,24 @@ export function ProtocolOrdersPageClient() {
 
   return (
     <div className="space-y-6">
-      <section className="animate-fade-in-up overflow-hidden rounded-[30px] bg-gradient-to-r from-[#071321] via-[#0c2238] to-[#0f3050] p-6 text-white shadow-[0_18px_48px_rgba(8,18,36,0.24)] lg:p-7">
+      <section className="overflow-hidden rounded-xl border border-[#dbe5ef] bg-[#1f2b3a] p-6 text-white lg:p-7">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch xl:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#9edfff]">
+            <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/8 px-3 py-1 text-xs font-semibold tracking-wide text-[#d5e8f7]">
               <ShieldCheck className="size-3.5" />
               {t("hero.badge")}
             </div>
             <h1 className="mt-4 text-3xl font-bold tracking-tight">
               {t("hero.title")}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-[#c8d9ea] sm:text-base">
+            <p className="mt-3 text-sm leading-6 text-[#d2deea] sm:text-base">
               {t("hero.description")}
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-[#dbeafe]">
                 {t("hero.user")}: {currentUser.name}
               </span>
-              <span className="rounded-full bg-[#00BFFF]/15 px-3 py-1.5 text-[#8ce2ff]">
+              <span className="rounded-full bg-[#0b74b8]/20 px-3 py-1.5 text-[#c8e1f5]">
                 {t("hero.role")}: {localizedRoleLabel(currentUser.role)}
               </span>
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-[#dbeafe]">
@@ -1074,17 +1270,17 @@ export function ProtocolOrdersPageClient() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:w-[430px] xl:self-end">
-            <div className="flex min-h-[104px] flex-col justify-between rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <div className="flex min-h-[104px] flex-col justify-between rounded-lg border border-white/15 bg-white/10 p-4">
               <div className="text-xs uppercase tracking-[0.14em] text-[#9edfff]">{t("hero.totalTasks")}</div>
               <div className="mt-2 text-3xl font-bold">{stats.total}</div>
             </div>
-            <div className="flex min-h-[104px] flex-col justify-between rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <div className="flex min-h-[104px] flex-col justify-between rounded-lg border border-white/15 bg-white/10 p-4">
               <div className="text-xs uppercase tracking-[0.14em] text-[#9edfff]">
                 {t("hero.onReview")}
               </div>
               <div className="mt-2 text-3xl font-bold">{stats.onReview}</div>
             </div>
-            <div className="flex min-h-[104px] flex-col justify-between rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <div className="flex min-h-[104px] flex-col justify-between rounded-lg border border-white/15 bg-white/10 p-4">
               <div className="text-xs uppercase tracking-[0.14em] text-[#9edfff]">
                 {t("hero.overdue")}
               </div>
@@ -1094,7 +1290,7 @@ export function ProtocolOrdersPageClient() {
         </div>
       </section>
 
-      <section className="animate-fade-in-up rounded-[28px] border border-[#00BFFF]/10 bg-white/90 p-2.5 shadow-[0_10px_32px_rgba(15,23,42,0.05)] backdrop-blur">
+      <section className="rounded-xl border border-[#dbe5ef] bg-white p-2.5">
         <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
           {views.map((view) => {
             const Icon = view.icon;
@@ -1104,10 +1300,10 @@ export function ProtocolOrdersPageClient() {
                 key={view.id}
                 type="button"
                 onClick={() => setActiveView(view.id)}
-                className={`flex min-h-[54px] items-center justify-center gap-2 rounded-[20px] px-4 py-3 text-sm font-semibold transition-all ${
+                className={`flex min-h-[54px] items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
                   isActive
-                    ? "bg-gradient-to-r from-[#00BFFF] to-[#0099cc] text-white shadow-[0_10px_24px_rgba(0,175,255,0.24)]"
-                    : "bg-[#f8fbff] text-[#47637a] hover:bg-[#eef8ff]"
+                    ? "bg-[#0b74b8] text-white"
+                    : "bg-[#f5f8fb] text-[#3f556c] hover:bg-[#ebf1f6]"
                 }`}
               >
                 <Icon className="size-4" />
@@ -1152,7 +1348,7 @@ export function ProtocolOrdersPageClient() {
           </div>
 
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.28fr)_minmax(320px,0.92fr)]">
-            <div className="rounded-[28px] border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-[#0f172a]">{t("dashboard.title")}</h2>
@@ -1163,7 +1359,7 @@ export function ProtocolOrdersPageClient() {
                 <button
                   type="button"
                   onClick={() => setActiveView("registry")}
-                  className="inline-flex items-center gap-2 self-start rounded-2xl bg-[#f3faff] px-3 py-2 text-sm font-semibold text-[#0099cc] ring-1 ring-[#00BFFF]/10 hover:bg-[#e7f6ff]"
+                  className="inline-flex items-center gap-2 self-start rounded-md bg-[#edf3f8] px-3 py-2 text-sm font-semibold text-[#085f96] ring-1 ring-[#dbe5ef] hover:bg-[#e6edf4]"
                 >
                   {t("dashboard.goToRegistry")}
                   <ArrowRight className="size-4" />
@@ -1174,7 +1370,7 @@ export function ProtocolOrdersPageClient() {
                 {monitoringItems.slice(0, 5).map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-[24px] border border-[#e6f3fb] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdff_100%)] p-4 shadow-[0_6px_20px_rgba(15,23,42,0.04)] transition hover:border-[#bfe8ff] sm:p-5"
+                    className="rounded-lg border border-[#e1e8ef] bg-white p-4 transition hover:border-[#c7d5e3] sm:p-5"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
@@ -1201,7 +1397,7 @@ export function ProtocolOrdersPageClient() {
                           {item.assigneeName} · {getSectorLabel(item.sector)}
                         </div>
                       </div>
-                      <div className="min-w-[112px] rounded-2xl bg-[#f8fbff] px-3 py-2 text-right ring-1 ring-[#00BFFF]/10">
+                      <div className="min-w-[112px] rounded-md bg-[#f5f8fb] px-3 py-2 text-right ring-1 ring-[#dbe5ef]">
                         <div className="text-xs text-[#64748b]">{t("common.deadline")}</div>
                         <div className="text-sm font-semibold text-[#0f172a]">
                           {formatDate(item.deadline, locale, {
@@ -1212,7 +1408,7 @@ export function ProtocolOrdersPageClient() {
                       </div>
                     </div>
                     <div className="mt-3 text-sm leading-6 text-[#475569]">{getOrderText(item, "monitoringNote")}</div>
-                    <div className="mt-4 rounded-2xl bg-[#f8fbff] p-3 ring-1 ring-[#00BFFF]/10">
+                    <div className="mt-4 rounded-md bg-[#f5f8fb] p-3 ring-1 ring-[#dbe5ef]">
                       <div className="mb-2 flex items-center justify-between text-xs text-[#64748b]">
                         <span>{t("common.progress")}</span>
                         <span className="font-semibold text-[#0f172a]">{item.progress}%</span>
@@ -1236,7 +1432,7 @@ export function ProtocolOrdersPageClient() {
             </div>
 
             <div className="grid auto-rows-fr gap-6">
-              <div className="rounded-[28px] border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+              <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
                 <h3 className="text-lg font-semibold text-[#0f172a]">{t("dashboard.sectorsTitle")}</h3>
                 <div className="mt-4 space-y-5">
                   {sectorSummary.map((item) => (
@@ -1248,13 +1444,13 @@ export function ProtocolOrdersPageClient() {
                             {item.approved}/{item.total} {t("dashboard.executedShort")} · {item.review} {t("dashboard.onReviewShort")}
                           </div>
                         </div>
-                        <div className="text-sm font-semibold text-[#0099cc]">
+                        <div className="text-sm font-semibold text-[#085f96]">
                           {item.progress}%
                         </div>
                       </div>
                       <div className="h-2 rounded-full bg-[#edf5fb]">
                         <div
-                          className="h-2 rounded-full bg-gradient-to-r from-[#00BFFF] to-[#27d0ff]"
+                          className="h-2 rounded-full bg-[#0b74b8]"
                           style={{ width: `${item.progress}%` }}
                         />
                       </div>
@@ -1263,7 +1459,7 @@ export function ProtocolOrdersPageClient() {
                 </div>
               </div>
 
-              <div className="rounded-[28px] border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+              <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
                 <h3 className="text-lg font-semibold text-[#0f172a]">{t("dashboard.decisionsTitle")}</h3>
                 <div className="mt-4 space-y-3">
                   <div className="rounded-[22px] bg-[#f8fbff] p-4 ring-1 ring-[#edf5fb]">
@@ -1287,7 +1483,7 @@ export function ProtocolOrdersPageClient() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[28px] border border-[#00BFFF]/10 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+          <div className="overflow-hidden rounded-xl border border-[#dbe5ef] bg-white">
             <button
               type="button"
               onClick={() => setHierarchyOpen((prev) => !prev)}
@@ -1308,7 +1504,7 @@ export function ProtocolOrdersPageClient() {
               )}
             </button>
             {hierarchyOpen ? (
-              <div className="border-t border-[#00BFFF]/10 bg-[#fcfeff] px-5 py-4">
+              <div className="border-t border-[#dbe5ef] bg-[#f8fafc] px-5 py-4">
                 <HierarchyChart
                   root={hierarchy}
                   onUpdate={setHierarchy}
@@ -1327,7 +1523,7 @@ export function ProtocolOrdersPageClient() {
               label={t("personal.metrics.focus")}
               value={personalItems.length}
               hint={t("personal.metrics.focusHint")}
-              accent="text-[#0099cc]"
+              accent="text-[#085f96]"
               icon={UserRound}
             />
             <MetricCard
@@ -1357,7 +1553,7 @@ export function ProtocolOrdersPageClient() {
             {personalItems.map((item) => (
               <div
                 key={item.id}
-                className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]"
+                className="rounded-xl border border-[#dbe5ef] bg-white p-5"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-2">
@@ -1395,7 +1591,7 @@ export function ProtocolOrdersPageClient() {
                 <p className="mt-4 text-sm leading-6 text-[#475569]">{getOrderText(item, "description")}</p>
 
                 <div className="mt-4 rounded-2xl bg-[#f8fbff] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0099cc]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#085f96]">
                     {t("personal.monitoring")}
                   </div>
                   <div className="mt-2 text-sm text-[#475569]">{getOrderText(item, "monitoringNote")}</div>
@@ -1410,7 +1606,7 @@ export function ProtocolOrdersPageClient() {
                   </div>
                   <div className="h-2 rounded-full bg-[#e9f2f9]">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-[#00BFFF] to-[#0099cc]"
+                      className="h-2 rounded-full bg-[#0b74b8]"
                       style={{ width: `${item.progress}%` }}
                     />
                   </div>
@@ -1431,7 +1627,7 @@ export function ProtocolOrdersPageClient() {
                     <button
                       type="button"
                       onClick={() => setReportDialog(item)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#00BFFF] to-[#0099cc] px-3 py-2 text-sm font-semibold text-white"
+                      className="inline-flex items-center gap-2 rounded-md bg-[#0b74b8] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#085f96]"
                     >
                       <Send className="size-4" />
                       {t("actions.sendReport")}
@@ -1453,7 +1649,7 @@ export function ProtocolOrdersPageClient() {
           </div>
 
           {personalItems.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-[#00BFFF]/20 bg-white p-10 text-center text-sm text-[#94a3b8]">
+            <div className="rounded-xl border border-dashed border-[#dbe5ef] bg-white p-10 text-center text-sm text-[#94a3b8]">
               {t("personal.empty")}
             </div>
           ) : null}
@@ -1463,7 +1659,7 @@ export function ProtocolOrdersPageClient() {
       {activeView === "registry" ? (
         <section className="space-y-6">
           <div className="grid items-start gap-6 xl:grid-cols-[0.95fr_1.45fr]">
-            <div className="rounded-[28px] border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-[#0f172a]">{t("registry.createTitle")}</h2>
                 <p className="mt-1 text-sm text-[#64748b]">
@@ -1478,7 +1674,7 @@ export function ProtocolOrdersPageClient() {
                     <select
                       value={assigneeId}
                       onChange={(event) => onAssigneeChange(event.target.value)}
-                      className="h-11 w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                      className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                     >
                       <option value="">{t("registry.placeholders.assignee")}</option>
                       {assignablePeople.map((person) => (
@@ -1489,13 +1685,13 @@ export function ProtocolOrdersPageClient() {
                     </select>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[#0f172a]">{t("registry.fields.sector")}</label>
                       <select
                         value={sector}
                         onChange={(event) => setSector(event.target.value)}
-                        className="h-11 w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                        className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                       >
                         <option value="">{t("registry.placeholders.sector")}</option>
                         {sectorsForAssignee.map((item) => (
@@ -1507,12 +1703,30 @@ export function ProtocolOrdersPageClient() {
                     </div>
 
                     <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-[#0f172a]">
+                        {t("registry.fields.location")}
+                      </label>
+                      <select
+                        value={location}
+                        onChange={(event) => setLocation(event.target.value)}
+                        className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
+                      >
+                        <option value="">{t("registry.placeholders.location")}</option>
+                        {ABAI_REGIONS.map((item) => (
+                          <option key={item} value={item}>
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[#0f172a]">{t("registry.fields.deadline")}</label>
                       <input
                         type="date"
                         value={deadline}
                         onChange={(event) => setDeadline(event.target.value)}
-                        className="h-11 w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                        className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                       />
                     </div>
                   </div>
@@ -1523,7 +1737,7 @@ export function ProtocolOrdersPageClient() {
                       <select
                         value={priority}
                         onChange={(event) => setPriority(event.target.value as TaskPriority)}
-                        className="h-11 w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                        className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                       >
                         <option value="critical">{t("priority.critical")}</option>
                         <option value="high">{t("priority.high")}</option>
@@ -1539,7 +1753,7 @@ export function ProtocolOrdersPageClient() {
                         onChange={(event) =>
                           setControlTone(event.target.value as ControlTone)
                         }
-                        className="h-11 w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                        className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                       >
                         <option value="critical">{t("control.critical")}</option>
                         <option value="attention">{t("control.attention")}</option>
@@ -1557,7 +1771,7 @@ export function ProtocolOrdersPageClient() {
                       value={title}
                       onChange={(event) => setTitle(event.target.value)}
                       placeholder={t("registry.placeholders.title")}
-                      className="h-11 w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                      className="h-11 w-full rounded-md border border-[#dbe5ef] bg-white px-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                     />
                   </div>
 
@@ -1568,7 +1782,7 @@ export function ProtocolOrdersPageClient() {
                       onChange={(event) => setDescription(event.target.value)}
                       placeholder={t("registry.placeholders.description")}
                       rows={4}
-                      className="w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 py-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                      className="w-full rounded-md border border-[#dbe5ef] bg-white px-3 py-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                     />
                   </div>
 
@@ -1581,7 +1795,7 @@ export function ProtocolOrdersPageClient() {
                       onChange={(event) => setMonitoringNote(event.target.value)}
                       placeholder={t("registry.placeholders.monitoringNote")}
                       rows={3}
-                      className="w-full rounded-2xl border border-[#00BFFF]/15 bg-white px-3 py-3 text-sm outline-none transition focus:border-[#00BFFF]/40 focus:ring-2 focus:ring-[#00BFFF]/10"
+                      className="w-full rounded-md border border-[#dbe5ef] bg-white px-3 py-3 text-sm outline-none transition focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
                     />
                   </div>
 
@@ -1589,7 +1803,7 @@ export function ProtocolOrdersPageClient() {
                     <button
                       type="button"
                       onClick={handleCreateOrder}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#00BFFF] to-[#0099cc] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(0,175,255,0.24)]"
+                      className="inline-flex items-center gap-2 rounded-md bg-[#0b74b8] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#085f96]"
                     >
                       <Send className="size-4" />
                       {t("registry.submit")}
@@ -1603,7 +1817,7 @@ export function ProtocolOrdersPageClient() {
               )}
             </div>
 
-            <div className="rounded-[28px] border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-[#0f172a]">{t("registry.tableTitle")}</h2>
@@ -1734,6 +1948,9 @@ export function ProtocolOrdersPageClient() {
                           <td className="px-4 py-4">
                             <div className="font-semibold text-[#0f172a]">{item.assigneeName}</div>
                             <div className="text-sm text-[#64748b]">{getSectorLabel(item.sector)}</div>
+                            {item.location ? (
+                              <div className="text-xs text-[#8fa0b2]">{item.location}</div>
+                            ) : null}
                             <div className="mt-1 text-xs text-[#94a3b8]">
                               {t("registry.assignedBy")}: {item.authorName}
                             </div>
@@ -1764,7 +1981,7 @@ export function ProtocolOrdersPageClient() {
                             </div>
                             <div className="mt-2 h-2 rounded-full bg-[#edf4fa]">
                               <div
-                                className="h-2 rounded-full bg-gradient-to-r from-[#00BFFF] to-[#0099cc]"
+                                className="h-2 rounded-full bg-[#0b74b8]"
                                 style={{ width: `${item.progress}%` }}
                               />
                             </div>
@@ -1785,7 +2002,7 @@ export function ProtocolOrdersPageClient() {
                                 <button
                                   type="button"
                                   onClick={() => setReportDialog(item)}
-                                  className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-[#00BFFF] to-[#0099cc] px-3 py-2 text-xs font-semibold text-white"
+                                  className="inline-flex items-center gap-1 rounded-md bg-[#0b74b8] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#085f96]"
                                 >
                                   <Send className="size-3.5" />
                                   {t("actions.submitForReview")}
@@ -1824,7 +2041,7 @@ export function ProtocolOrdersPageClient() {
       {activeView === "calendar" ? (
         <section className="space-y-6">
           <div className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
-            <div className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-[#0f172a]">{t("calendar.title")}</h2>
@@ -1840,11 +2057,11 @@ export function ProtocolOrdersPageClient() {
                         (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
                       )
                     }
-                    className="grid size-10 place-items-center rounded-2xl border border-[#00BFFF]/15 bg-[#f8fbff] text-[#47637a]"
+                    className="grid size-10 place-items-center rounded-md border border-[#dbe5ef] bg-[#f5f8fb] text-[#3f556c]"
                   >
                     <ChevronLeft className="size-4" />
                   </button>
-                  <div className="min-w-[180px] rounded-2xl bg-[#f8fbff] px-4 py-2 text-center text-sm font-semibold text-[#0f172a]">
+                  <div className="min-w-[180px] rounded-md bg-[#f5f8fb] px-4 py-2 text-center text-sm font-semibold text-[#0f172a]">
                     {new Intl.DateTimeFormat(locale === "kk" ? "kk-KZ" : "ru-RU", {
                       month: "long",
                       year: "numeric",
@@ -1857,7 +2074,7 @@ export function ProtocolOrdersPageClient() {
                         (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
                       )
                     }
-                    className="grid size-10 place-items-center rounded-2xl border border-[#00BFFF]/15 bg-[#f8fbff] text-[#47637a]"
+                    className="grid size-10 place-items-center rounded-md border border-[#dbe5ef] bg-[#f5f8fb] text-[#3f556c]"
                   >
                     <ChevronRight className="size-4" />
                   </button>
@@ -1868,7 +2085,7 @@ export function ProtocolOrdersPageClient() {
                 {weekDays.map((day) => (
                   <div
                     key={day}
-                    className="rounded-xl bg-[#f8fbff] px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.12em] text-[#64748b]"
+                    className="rounded-md bg-[#f5f8fb] px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.12em] text-[#5f6f81]"
                   >
                     {day}
                   </div>
@@ -1878,7 +2095,7 @@ export function ProtocolOrdersPageClient() {
               <div className="mt-3 grid grid-cols-7 gap-2">
                 {monthGrid.map((date) => {
                   const dateKey = toInputDate(date);
-                  const dayItems = calendarItemsByDate[dateKey] ?? [];
+                  const cell = calendarCellPreviews[dateKey] ?? { preview: [], total: 0 };
                   const isCurrentMonth = date.getMonth() === calendarAnchor.getMonth();
                   const isSelected = dateKey === selectedCalendarDate;
 
@@ -1887,10 +2104,10 @@ export function ProtocolOrdersPageClient() {
                       key={dateKey}
                       type="button"
                       onClick={() => setSelectedCalendarDate(dateKey)}
-                      className={`min-h-[120px] rounded-2xl border p-3 text-left transition ${
+                      className={`min-h-[120px] rounded-md border p-3 text-left transition ${
                         isSelected
-                          ? "border-[#00BFFF]/50 bg-[#eef8ff]"
-                          : "border-[#edf4fa] bg-white hover:border-[#cfe8f7]"
+                          ? "border-[#0b74b8]/40 bg-[#edf3f8]"
+                          : "border-[#e4ebf2] bg-white hover:border-[#c6d5e4]"
                       } ${isCurrentMonth ? "" : "opacity-45"}`}
                     >
                       <div className="flex items-center justify-between">
@@ -1898,29 +2115,39 @@ export function ProtocolOrdersPageClient() {
                           {date.getDate()}
                         </span>
                         {dateKey === today ? (
-                          <span className="rounded-full bg-[#00BFFF]/15 px-2 py-0.5 text-[10px] font-semibold text-[#0099cc]">
+                          <span className="rounded-full bg-[#0b74b8]/15 px-2 py-0.5 text-[10px] font-semibold text-[#085f96]">
                             {t("calendar.today")}
                           </span>
                         ) : null}
                       </div>
                       <div className="mt-3 space-y-2">
-                        {dayItems.slice(0, 3).map((item) => (
-                          <div
-                            key={item.id}
-                            className={`rounded-xl px-2 py-1.5 text-[11px] font-medium ${
-                              item.controlTone === "critical"
-                                ? "bg-rose-50 text-rose-700"
-                                : item.controlTone === "attention"
-                                  ? "bg-amber-50 text-amber-700"
-                                  : "bg-[#eef8ff] text-[#0099cc]"
-                            }`}
-                          >
-                            {item.assigneeName.split(" ")[0]} · {getOrderText(item, "title")}
-                          </div>
-                        ))}
-                        {dayItems.length > 3 ? (
+                        {cell.preview.map((entry) =>
+                          entry.kind === "task" ? (
+                            <div
+                              key={entry.key}
+                              className={`rounded-xl px-2 py-1.5 text-[11px] font-medium ${
+                                entry.item.controlTone === "critical"
+                                  ? "bg-rose-50 text-rose-700"
+                                  : entry.item.controlTone === "attention"
+                                    ? "bg-amber-50 text-amber-700"
+                                    : "bg-[#edf3f8] text-[#085f96]"
+                              }`}
+                            >
+                              {entry.item.assigneeName.split(" ")[0]} ·{" "}
+                              {getOrderText(entry.item, "title")}
+                            </div>
+                          ) : (
+                            <div
+                              key={entry.key}
+                              className="rounded-xl bg-amber-50 px-2 py-1.5 text-[11px] font-medium text-amber-900"
+                            >
+                              {entry.text}
+                            </div>
+                          ),
+                        )}
+                        {cell.total > 3 ? (
                           <div className="text-[11px] font-semibold text-[#64748b]">
-                            {t("calendar.more", { count: dayItems.length - 3 })}
+                            {t("calendar.more", { count: cell.total - 3 })}
                           </div>
                         ) : null}
                       </div>
@@ -1930,8 +2157,8 @@ export function ProtocolOrdersPageClient() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
-              <div className="flex items-center gap-2 text-[#0099cc]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
+              <div className="flex items-center gap-2 text-[#085f96]">
                 <CalendarClock className="size-5" />
                 <h3 className="text-lg font-semibold text-[#0f172a]">
                   {t("calendar.tasksFor")} {formatDate(selectedCalendarDate, locale, { day: "2-digit", month: "long" })}
@@ -1939,13 +2166,20 @@ export function ProtocolOrdersPageClient() {
               </div>
 
               <div className="mt-5 space-y-4">
+                {selectedDateItems.length === 0 && selectedDateNotes.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-[#d7e1eb] p-8 text-center text-sm text-[#8092a5]">
+                    {t("calendar.empty")}
+                  </div>
+                ) : null}
+
                 {selectedDateItems.map((item) => (
-                  <div key={item.id} className="rounded-2xl bg-[#f8fbff] p-4">
+                  <div key={item.id} className="rounded-lg bg-[#f5f8fb] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <div className="text-sm font-semibold text-[#0f172a]">{getOrderText(item, "title")}</div>
                         <div className="mt-1 text-xs text-[#64748b]">
                           {item.assigneeName} · {getSectorLabel(item.sector)}
+                          {item.location ? ` · ${item.location}` : ""}
                         </div>
                       </div>
                       <span
@@ -1960,11 +2194,53 @@ export function ProtocolOrdersPageClient() {
                   </div>
                 ))}
 
-                {selectedDateItems.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[#d7eaf7] p-8 text-center text-sm text-[#94a3b8]">
-                    {t("calendar.empty")}
+                {selectedDateNotes.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64748b]">
+                      {t("calendar.notesTitle")}
+                    </div>
+                    {selectedDateNotes.map((note) => (
+                      <div
+                        key={note.id}
+                        className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50/90 p-3"
+                      >
+                        <p className="min-w-0 flex-1 text-sm leading-relaxed text-amber-950">{note.text}</p>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCalendarNote(note.id)}
+                          className="grid size-9 shrink-0 place-items-center rounded-xl text-amber-800/80 transition hover:bg-amber-100 hover:text-amber-950"
+                          aria-label={t("calendar.deleteNoteAria")}
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 ) : null}
+
+                <div className="rounded-lg border border-[#dbe5ef] bg-[#f5f8fb] p-4">
+                  <label className="text-xs font-semibold text-[#3f556c]" htmlFor="calendar-note-draft">
+                    {t("calendar.addNoteLabel")}
+                  </label>
+                  <textarea
+                    id="calendar-note-draft"
+                    value={calendarNoteDraft}
+                    onChange={(event) => setCalendarNoteDraft(event.target.value)}
+                    placeholder={t("calendar.notePlaceholder")}
+                    rows={3}
+                    className="mt-2 w-full resize-y rounded-md border border-[#dbe5ef] bg-white px-3 py-2.5 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#0b74b8]/40 focus:ring-2 focus:ring-[#0b74b8]/10"
+                  />
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleAddCalendarNote}
+                      disabled={!calendarNoteDraft.trim()}
+                      className="rounded-md bg-[#0b74b8] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#085f96] disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {t("calendar.addNote")}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2005,7 +2281,7 @@ export function ProtocolOrdersPageClient() {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <div className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
               <h3 className="text-lg font-semibold text-[#0f172a]">{t("analytics.statusesTitle")}</h3>
               <div className="mt-5 h-72">
                 <ResponsiveContainer width="100%" height="100%">
@@ -2042,15 +2318,15 @@ export function ProtocolOrdersPageClient() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
               <h3 className="text-lg font-semibold text-[#0f172a]">{t("analytics.trendTitle")}</h3>
               <div className="mt-5 h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendData}>
                     <defs>
                       <linearGradient id="createdGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00BFFF" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="#00BFFF" stopOpacity={0.03} />
+                        <stop offset="5%" stopColor="#0b74b8" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#0b74b8" stopOpacity={0.03} />
                       </linearGradient>
                       <linearGradient id="closedGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
@@ -2064,7 +2340,7 @@ export function ProtocolOrdersPageClient() {
                     <Area
                       type="monotone"
                       dataKey="created"
-                      stroke="#00BFFF"
+                      stroke="#0b74b8"
                       fill="url(#createdGradient)"
                       strokeWidth={2}
                     />
@@ -2081,7 +2357,7 @@ export function ProtocolOrdersPageClient() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+            <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
             <h3 className="text-lg font-semibold text-[#0f172a]">{t("analytics.sectorsTitle")}</h3>
             <div className="mt-5 h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -2090,7 +2366,7 @@ export function ProtocolOrdersPageClient() {
                   <XAxis dataKey="sector" stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" allowDecimals={false} />
                   <Tooltip />
-                  <Bar dataKey="active" stackId="a" fill="#00BFFF" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="active" stackId="a" fill="#0b74b8" radius={[6, 6, 0, 0]} />
                   <Bar dataKey="completed" stackId="a" fill="#10b981" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -2111,14 +2387,16 @@ export function ProtocolOrdersPageClient() {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-2xl border border-[#00BFFF]/15 bg-white px-4 py-3 text-sm font-semibold text-[#47637a]"
+                onClick={() => void handleExportReportPdf()}
+                className="inline-flex items-center gap-2 rounded-md border border-[#dbe5ef] bg-white px-4 py-3 text-sm font-semibold text-[#3f556c] transition hover:bg-[#f5f8fb]"
               >
                 <FileDown className="size-4" />
                 {t("reports.exportPdf")}
               </button>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#00BFFF] to-[#0099cc] px-4 py-3 text-sm font-semibold text-white"
+                onClick={handleExportReportXls}
+                className="inline-flex items-center gap-2 rounded-md bg-[#0b74b8] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#085f96]"
               >
                 <FileSpreadsheet className="size-4" />
                 {t("reports.exportXls")}
@@ -2131,7 +2409,7 @@ export function ProtocolOrdersPageClient() {
               label={t("reports.metrics.total")}
               value={stats.total}
               hint={t("reports.metrics.totalHint")}
-              accent="text-[#0099cc]"
+              accent="text-[#085f96]"
               icon={ClipboardList}
             />
             <MetricCard
@@ -2157,10 +2435,10 @@ export function ProtocolOrdersPageClient() {
             />
           </div>
 
-          <div className="rounded-3xl border border-[#00BFFF]/10 bg-white p-5 shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+          <div className="rounded-xl border border-[#dbe5ef] bg-white p-5">
             <div className="grid gap-4 lg:grid-cols-3">
               <div className="rounded-2xl bg-[#f8fbff] p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0099cc]">
+                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#085f96]">
                   {t("reports.summaryTitle")}
                 </div>
                 <div className="mt-2 text-sm text-[#475569]">
@@ -2172,7 +2450,7 @@ export function ProtocolOrdersPageClient() {
                 </div>
               </div>
               <div className="rounded-2xl bg-[#f8fbff] p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0099cc]">
+                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#085f96]">
                   {t("reports.risksTitle")}
                 </div>
                 <div className="mt-2 text-sm text-[#475569]">
@@ -2180,7 +2458,7 @@ export function ProtocolOrdersPageClient() {
                 </div>
               </div>
               <div className="rounded-2xl bg-[#f8fbff] p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0099cc]">
+                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#085f96]">
                   {t("reports.conclusionTitle")}
                 </div>
                 <div className="mt-2 text-sm text-[#475569]">
@@ -2222,7 +2500,12 @@ export function ProtocolOrdersPageClient() {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-[#475569]">{item.assigneeName}</td>
-                        <td className="px-4 py-4 text-[#475569]">{getSectorLabel(item.sector)}</td>
+                        <td className="px-4 py-4 text-[#475569]">
+                          <div>{getSectorLabel(item.sector)}</div>
+                          {item.location ? (
+                            <div className="text-xs text-[#8fa0b2]">{item.location}</div>
+                          ) : null}
+                        </td>
                         <td className="px-4 py-4">
                           <span
                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${getStatusClasses(

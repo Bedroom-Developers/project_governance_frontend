@@ -70,11 +70,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function UsersPage() {
   return (
     <div className="space-y-5">
-      <div className="animate-fade-in-up">
-        <h1 className="text-2xl font-bold tracking-tight text-[#0a0a0f]">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#0f172a]">
           Пользователи
         </h1>
-        <div className="mt-1 text-sm text-[#566a7f]">
+        <div className="mt-1 text-sm text-[#5f6f81]">
           Список сотрудников с ролями, отделами и доступами к проектам.
         </div>
       </div>
