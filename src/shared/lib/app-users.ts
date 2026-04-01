@@ -10,7 +10,8 @@ export type WorkspaceRole =
   | "admin"
   | "akim"
   | "deputy"
-  | "department_head";
+  | "department_head"
+  | "specialist";
 
 export type WorkspaceUser = {
   id: string;
@@ -38,6 +39,10 @@ export type HierarchyPerson = {
 };
 
 export const HIERARCHY_STORAGE_KEY = "protocol-orders-hierarchy";
+
+/** Увеличивайте при изменении DEFAULT_HIERARCHY (новые уровни, id) — клиент подтянет дерево заново. */
+export const HIERARCHY_TREE_SCHEMA_VERSION = 2;
+export const HIERARCHY_TREE_SCHEMA_KEY = "protocol-orders-hierarchy-schema";
 
 function normalizeGovernmentText(value?: string) {
   if (!value) return value ?? "";
@@ -129,7 +134,14 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
           id: "1-1",
           name: "Айдана Сериккызы Кайратова",
           title: "Руководитель отдела экономики и финансов",
-          children: [],
+          children: [
+            {
+              id: "1-1-s1",
+              name: "Асқар Нұрланұлы Омаров",
+              title: "Главный специалист отдела экономики и финансов",
+              children: [],
+            },
+          ],
         },
       ],
     },
@@ -149,7 +161,14 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
           id: "2-1",
           name: "Руслан Бекенулы Ахметов",
           title: "Руководитель отдела кадров и правового обеспечения",
-          children: [],
+          children: [
+            {
+              id: "2-1-s1",
+              name: "Диана Ерланқызы Сүлейменова",
+              title: "Главный специалист отдела кадров и правового обеспечения",
+              children: [],
+            },
+          ],
         },
       ],
     },
@@ -169,7 +188,14 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
           id: "3-1",
           name: "Камария Кажгалиева",
           title: "Руководитель отдела строительства и ЖКХ",
-          children: [],
+          children: [
+            {
+              id: "3-1-s1",
+              name: "Елдар Бақытұлы Нұрғалиев",
+              title: "Главный специалист отдела строительства и ЖКХ",
+              children: [],
+            },
+          ],
         },
       ],
     },
@@ -189,7 +215,14 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
           id: "4-1",
           name: "Нурбек Жандосулы Нургалиев",
           title: "Руководитель отдела ветеринарии и сельского хозяйства",
-          children: [],
+          children: [
+            {
+              id: "4-1-s1",
+              name: "Марат Серікұлы Әбдірахманов",
+              title: "Главный специалист отдела ветеринарии и сельского хозяйства",
+              children: [],
+            },
+          ],
         },
       ],
     },
@@ -207,7 +240,14 @@ export const DEFAULT_HIERARCHY: HierarchyNode = normalizeHierarchyNode({
           id: "5-1",
           name: "Айсулу Ермековна Тлеубекова",
           title: "Руководитель отдела культуры и внутренней политики",
-          children: [],
+          children: [
+            {
+              id: "5-1-s1",
+              name: "Гүлнұр Қайратқызы Мұқанова",
+              title: "Главный специалист отдела культуры и внутренней политики",
+              children: [],
+            },
+          ],
         },
       ],
     },
@@ -394,6 +434,81 @@ export const WORKSPACE_USERS: WorkspaceUser[] = ([
     email: "a.tleubekova@test.local",
     phone: "+7 (701) 000-00-12",
   },
+  {
+    id: "specialist-omarov",
+    login: "spec-econ",
+    password: "spec123",
+    name: "Асқар Нұрланұлы Омаров",
+    title: "Главный специалист отдела экономики и финансов",
+    role: "specialist",
+    nodeId: "1-1-s1",
+    organization: "Аппарат акима области Абай",
+    department: "Отдел экономики и финансов",
+    position: "Главный специалист",
+    specialization: "Экономический анализ и отчётность",
+    email: "a.omarov@test.local",
+    phone: "+7 (701) 000-00-20",
+  },
+  {
+    id: "specialist-suleimenova",
+    login: "spec-hr",
+    password: "spec123",
+    name: "Диана Ерланқызы Сүлейменова",
+    title: "Главный специалист отдела кадров и правового обеспечения",
+    role: "specialist",
+    nodeId: "2-1-s1",
+    organization: "Аппарат акима области Абай",
+    department: "Отдел кадров и правового обеспечения",
+    position: "Главный специалист",
+    specialization: "Кадровый учёт и правовая экспертиза",
+    email: "d.suleimenova@test.local",
+    phone: "+7 (701) 000-00-21",
+  },
+  {
+    id: "specialist-nurgaliyev-e",
+    login: "spec-build",
+    password: "spec123",
+    name: "Елдар Бақытұлы Нұрғалиев",
+    title: "Главный специалист отдела строительства и ЖКХ",
+    role: "specialist",
+    nodeId: "3-1-s1",
+    organization: "Аппарат акима области Абай",
+    department: "Отдел строительства и ЖКХ",
+    position: "Главный специалист",
+    specialization: "Строительный контроль и ЖКХ-проекты",
+    email: "e.nurgaliyev@test.local",
+    phone: "+7 (701) 000-00-22",
+  },
+  {
+    id: "specialist-abdirakhmanov",
+    login: "spec-vet",
+    password: "spec123",
+    name: "Марат Серікұлы Әбдірахманов",
+    title: "Главный специалист отдела ветеринарии и сельского хозяйства",
+    role: "specialist",
+    nodeId: "4-1-s1",
+    organization: "Аппарат акима области Абай",
+    department: "Отдел ветеринарии и сельского хозяйства",
+    position: "Главный специалист",
+    specialization: "Ветнадзор и агросектор",
+    email: "m.abdirakhmanov@test.local",
+    phone: "+7 (701) 000-00-23",
+  },
+  {
+    id: "specialist-mukanova",
+    login: "spec-culture",
+    password: "spec123",
+    name: "Гүлнұр Қайратқызы Мұқанова",
+    title: "Главный специалист отдела культуры и внутренней политики",
+    role: "specialist",
+    nodeId: "5-1-s1",
+    organization: "Аппарат акима области Абай",
+    department: "Отдел культуры и внутренней политики",
+    position: "Главный специалист",
+    specialization: "Культурные программы и коммуникации",
+    email: "g.mukanova@test.local",
+    phone: "+7 (701) 000-00-24",
+  },
 ] as WorkspaceUser[]).map(normalizeWorkspaceUser);
 
 export function getWorkspaceUserById(userId?: string | null) {
@@ -415,6 +530,7 @@ export function getRoleLabel(role: WorkspaceRole) {
     akim: "Аким области",
     deputy: "Заместитель акима",
     department_head: "Руководитель отдела",
+    specialist: "Специалист",
   };
 
   return labels[role];
@@ -458,7 +574,13 @@ export function canEditHierarchy(role: WorkspaceRole) {
 }
 
 export function canAssignProtocolOrders(role: WorkspaceRole) {
-  return role === "admin" || role === "akim" || role === "deputy";
+  return (
+    role === "admin" ||
+    role === "akim" ||
+    role === "deputy" ||
+    role === "department_head" ||
+    role === "specialist"
+  );
 }
 
 export function flattenHierarchy(
@@ -483,6 +605,57 @@ export function flattenHierarchy(
   ];
 }
 
+/** Узел заместителя акима в ветке (первый уровень непосредственно под акимом). */
+export function getDeputyBranchNodeId(hierarchy: HierarchyNode, nodeId: string): string {
+  const people = flattenHierarchy(hierarchy);
+  let current: string | null = nodeId;
+  const seen = new Set<string>();
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    const person = people.find((p) => p.id === current);
+    if (!person) break;
+    if (person.parentId === "akim") {
+      return person.id;
+    }
+    current = person.parentId;
+  }
+  return "";
+}
+
+export function resolveProtocolOrderDeputyId(
+  hierarchy: HierarchyNode,
+  author: WorkspaceUser,
+  assigneeNodeId: string,
+): string {
+  if (assigneeNodeId === "akim") {
+    if (author.nodeId) {
+      return getDeputyBranchNodeId(hierarchy, author.nodeId);
+    }
+    return "";
+  }
+  return getDeputyBranchNodeId(hierarchy, assigneeNodeId);
+}
+
+/** Исполнитель по поручению — сам менеджер или любой подчинённый ниже в дереве. */
+export function isAssigneeUnderManager(
+  hierarchy: HierarchyNode,
+  assigneeNodeId: string,
+  managerNodeId: string,
+): boolean {
+  const people = flattenHierarchy(hierarchy);
+  let current: string | null = assigneeNodeId;
+  const seen = new Set<string>();
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    if (current === managerNodeId) {
+      return true;
+    }
+    const person = people.find((p) => p.id === current);
+    current = person?.parentId ?? null;
+  }
+  return false;
+}
+
 export function findHierarchyNode(root: HierarchyNode, nodeId: string): HierarchyNode | null {
   if (root.id === nodeId) {
     return normalizeHierarchyNode(root);
@@ -504,12 +677,30 @@ export function getAssignablePeopleForUser(
 ) {
   const people = flattenHierarchy(hierarchy);
 
-  if (currentUser.role === "admin" || currentUser.role === "akim") {
+  if (currentUser.role === "admin") {
     return people.filter((person) => person.id !== "akim");
+  }
+
+  if (currentUser.role === "akim") {
+    return people.filter((person) => person.parentId === "akim");
   }
 
   if (currentUser.role === "deputy" && currentUser.nodeId) {
     return people.filter((person) => person.parentId === currentUser.nodeId);
+  }
+
+  if (currentUser.role === "department_head" && currentUser.nodeId) {
+    const specialists = people.filter((person) => person.parentId === currentUser.nodeId);
+    const akimPerson = people.find((person) => person.id === "akim");
+    return akimPerson ? [...specialists, akimPerson] : specialists;
+  }
+
+  if (currentUser.role === "specialist" && currentUser.nodeId) {
+    const self = people.find((person) => person.id === currentUser.nodeId);
+    const parentId = self?.parentId;
+    if (!parentId) return [];
+    const head = people.find((person) => person.id === parentId);
+    return head ? [head] : [];
   }
 
   return [];

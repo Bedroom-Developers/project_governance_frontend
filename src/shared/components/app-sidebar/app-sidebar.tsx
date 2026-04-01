@@ -15,6 +15,8 @@ import { canViewUsers, getRoleLabel } from "@/shared/lib/app-users";
 import { clearClientAuthCookie } from "@/shared/lib/auth";
 import { cn } from "@/shared/lib/utils";
 
+import { SidebarProtocolTasksSummary } from "./sidebar-protocol-tasks-summary";
+
 type NavItem = {
   href: string;
   labelKey: string;
@@ -99,12 +101,16 @@ export function AppSidebar({ currentUser }: AppSidebarProps) {
           <div className="truncate text-sm font-semibold text-white">
             {currentUser.name}
           </div>
-          <div className="mt-0.5 text-xs text-[#bccbdb]">
-            {getRoleLabel(currentUser.role)}
+          <div className="mt-0.5 truncate text-xs text-[#bccbdb]">
+            {currentUser.position}
           </div>
+          <div className="mt-2 text-xs text-[#bccbdb]">{getRoleLabel(currentUser.role)}</div>
           <div className="mt-1 truncate text-[11px] text-[#8da2b8]">
             {currentUser.login}
           </div>
+        </div>
+        <div className="mx-1 mb-3">
+          <SidebarProtocolTasksSummary currentUser={currentUser} />
         </div>
         <div className="flex flex-col gap-1 px-1 pt-6">
           <button

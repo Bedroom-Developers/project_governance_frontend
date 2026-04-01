@@ -148,3 +148,61 @@ export async function downloadProtocolOrdersReportPdf(params: {
 
   pdfMake.createPdf(docDefinition).download(`${params.fileBase}.pdf`);
 }
+
+/** Одна задача: таблица «поле — значение» (если нет прикреплённого PDF при выдаче). */
+export async function downloadProtocolOrderSummaryPdf(params: {
+  title: string;
+  fileBase: string;
+  rows: { label: string; value: string }[];
+}): Promise<void> {
+  const pdfMakeModule = await import("pdfmake/build/pdfmake");
+  const vfsModule = await import("pdfmake/build/vfs_fonts");
+
+  const pdfMake = (pdfMakeModule as { default?: PdfMakeFactory }).default ?? (pdfMakeModule as unknown as PdfMakeFactory);
+  const vfs = extractPdfVfs(vfsModule);
+
+  if (!pdfMake?.createPdf || !vfs) {
+    throw new Error("pdfmake init failed");
+  }
+
+  pdfMake.vfs = vfs;
+
+  const safeBase =
+    params.fileBase.replace(/[/\\?%*:|"<>]/g, "-").replace(/\s+/g, "_").slice(0, 120) || "task";
+
+  const tableBody: unknown[][] = params.rows.map((row) => [
+    { text: row.label, style: "labelCell", bold: true },
+    { text: row.value, style: "valueCell" },
+  ]);
+
+  const docDefinition = {
+    pageOrientation: "portrait" as const,
+    pageMargins: [36, 36, 36, 36] as [number, number, number, number],
+    content: [
+      { text: params.title, style: "docTitle", margin: [0, 0, 0, 14] },
+      {
+        table: {
+          widths: [118, "*"],
+          body: tableBody,
+        },
+        layout: {
+          fillColor: (rowIndex: number) => (rowIndex % 2 === 0 ? "#f1f5f9" : null),
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => "#cbd5e1",
+          vLineColor: () => "#cbd5e1",
+        },
+      },
+    ],
+    styles: {
+      docTitle: { fontSize: 13, bold: true },
+      labelCell: { fontSize: 8, color: "#334155" },
+      valueCell: { fontSize: 8 },
+    },
+    defaultStyle: {
+      font: "Roboto",
+    },
+  };
+
+  pdfMake.createPdf(docDefinition).download(`${safeBase}.pdf`);
+}

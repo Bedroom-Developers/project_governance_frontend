@@ -36,7 +36,7 @@ export default async function AppLayout({
   const mobileNavItems = [
     { href: "/directions", label: "Направления" },
     ...(canViewUsers(currentUser.role) ? [{ href: "/users", label: "Пользователи" }] : []),
-    { href: "/protocol-orders", label: "Протокольные задачи" },
+    { href: "/protocol-orders", label: "Протокольные поручение" },
   ];
 
   return (
